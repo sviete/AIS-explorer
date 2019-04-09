@@ -28,6 +28,7 @@ import android.support.provider.DocumentFile;
 import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -52,10 +53,8 @@ import androidx.appcompat.app.ActionBar;
 import androidx.core.content.ContextCompat;
 import dev.dworks.apps.anexplorer.common.ActionBarActivity;
 import dev.dworks.apps.anexplorer.common.DialogBuilder;
-import dev.dworks.apps.anexplorer.misc.AnalyticsManager;
 import dev.dworks.apps.anexplorer.misc.AsyncTask;
 import dev.dworks.apps.anexplorer.misc.ContentProviderClientCompat;
-import dev.dworks.apps.anexplorer.misc.CrashReportingManager;
 import dev.dworks.apps.anexplorer.misc.FileUtils;
 import dev.dworks.apps.anexplorer.misc.SystemBarTintManager;
 import dev.dworks.apps.anexplorer.misc.Utils;
@@ -226,7 +225,6 @@ public class NoteActivity extends ActionBarActivity
                 return true;
             case R.id.menu_save:
                 save(false);
-                AnalyticsManager.logEvent("text_save");
                 return true;
             case R.id.menu_revert:
                 setSaveProgress(true);
@@ -236,7 +234,6 @@ public class NoteActivity extends ActionBarActivity
                     showError("Unable to Load file");
                 }
                 setSaveProgress(false);
-                AnalyticsManager.logEvent("text_revert");
                 return true;
         }
         return false;
@@ -281,13 +278,13 @@ public class NoteActivity extends ActionBarActivity
                 return text;
             }catch (Exception e){
                 errorMsg = e.getLocalizedMessage();
-                CrashReportingManager.logException(e);
+                Log.e("EXP", e.toString());
             }finally {
                 if(null != is){
                     try {
                         is.close();
                     } catch (Exception e) {
-                        CrashReportingManager.logException(e);
+                        Log.e("EXP", e.toString());
                     }
                 }
             }
@@ -355,7 +352,6 @@ public class NoteActivity extends ActionBarActivity
                     ufos.close();
                 } catch (IOException e) {
                     errorMsg = e.getLocalizedMessage();
-                    CrashReportingManager.logException(e);
                 }
                 return null;
             } else {
@@ -369,7 +365,7 @@ public class NoteActivity extends ActionBarActivity
                     os.close();
                 } catch (IOException e) {
                     errorMsg = e.getLocalizedMessage();
-                    CrashReportingManager.logException(e);
+                    Log.e("EXP", e.toString());
                 }
                 return null;
             }
@@ -425,7 +421,7 @@ public class NoteActivity extends ActionBarActivity
             try {
                 return getContentResolver().openInputStream(uri);
             } catch (Exception e) {
-                CrashReportingManager.logException(e);
+                Log.e("EXP", e.toString());
             }
         } else if (scheme.startsWith(ContentResolver.SCHEME_FILE)) {
             File f = new File(uri.getPath());
@@ -433,7 +429,7 @@ public class NoteActivity extends ActionBarActivity
                 try {
                     return new FileInputStream(f);
                 } catch (Exception e) {
-                    CrashReportingManager.logException(e);
+                    Log.e("EXP", e.toString());
                 }
             }
         }
@@ -449,7 +445,7 @@ public class NoteActivity extends ActionBarActivity
                 Uri finalUri = null == documentFile ? uri : documentFile.getUri();
                 return getContentResolver().openOutputStream(finalUri);
             } catch (Exception e) {
-                CrashReportingManager.logException(e);
+                Log.e("EXP", e.toString());
             }
         } else if (scheme.startsWith(ContentResolver.SCHEME_FILE)) {
             File f = new File(uri.getPath());
@@ -457,7 +453,7 @@ public class NoteActivity extends ActionBarActivity
                 try {
                     return new FileOutputStream(f);
                 } catch (Exception e) {
-                    CrashReportingManager.logException(e);
+                    Log.e("EXP", e.toString());
                 }
             }
         }
@@ -483,8 +479,6 @@ public class NoteActivity extends ActionBarActivity
         }
         else if (!TextUtils.isEmpty(scheme) && scheme.startsWith(ContentResolver.SCHEME_FILE)) {
             name = uri.getLastPathSegment();
-        } else {
-            CrashReportingManager.log(TAG, uri.toString());
         }
         getSupportActionBar().setTitle(FileUtils.getName(name));
         getSupportActionBar().setSubtitle("");

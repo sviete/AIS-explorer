@@ -55,7 +55,6 @@ import dev.dworks.apps.anexplorer.DocumentsApplication;
 import dev.dworks.apps.anexplorer.R;
 import dev.dworks.apps.anexplorer.cursor.MatrixCursor;
 import dev.dworks.apps.anexplorer.libcore.util.Objects;
-import dev.dworks.apps.anexplorer.misc.CrashReportingManager;
 import dev.dworks.apps.anexplorer.misc.FileUtils;
 import dev.dworks.apps.anexplorer.misc.MimePredicate;
 import dev.dworks.apps.anexplorer.misc.ParcelFileDescriptorUtil;
@@ -358,7 +357,6 @@ public class UsbStorageProvider extends DocumentsProvider {
             return getMimeType(getFileForDocId(documentId));
         } catch (IOException e) {
             Log.e(TAG, e.getMessage());
-            CrashReportingManager.logException(e);
         }
 
         return BASIC_MIME_TYPE;
@@ -442,7 +440,7 @@ public class UsbStorageProvider extends DocumentsProvider {
                 row.add(Document.COLUMN_SUMMARY, FileUtils.formatFileCount(file.list().length));
             }
         } catch (IOException e) {
-            CrashReportingManager.logException(e);
+            Log.e("EXP", e.toString());
         }
 
         // Only publish dates reasonably after epoch
@@ -463,7 +461,7 @@ public class UsbStorageProvider extends DocumentsProvider {
                 }
             }
         } catch (Exception e){
-            CrashReportingManager.logException(e);
+            Log.e(TAG, e.toString());
         }
     }
 

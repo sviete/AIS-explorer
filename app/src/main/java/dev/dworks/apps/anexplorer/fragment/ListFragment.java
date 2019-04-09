@@ -29,7 +29,6 @@ import android.widget.TextView;
 
 import dev.dworks.apps.anexplorer.R;
 import dev.dworks.apps.anexplorer.common.BaseFragment;
-import dev.dworks.apps.anexplorer.misc.CrashReportingManager;
 
 public class ListFragment extends BaseFragment {
 	private ListAdapter mAdapter;
@@ -81,7 +80,6 @@ public class ListFragment extends BaseFragment {
                 	@SuppressWarnings("unused")
 					ListView list = (ListView) rawListView;	
 				} catch (Exception e) {
-                    CrashReportingManager.logException(e);
 		               throw new RuntimeException(
 		                        "Content has view with id attribute 'android.R.id.list' "
 		                                + "that is not a ListView class");

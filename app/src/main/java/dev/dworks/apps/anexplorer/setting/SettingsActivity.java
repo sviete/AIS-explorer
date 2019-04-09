@@ -33,7 +33,6 @@ import androidx.core.content.ContextCompat;
 import dev.dworks.apps.anexplorer.DocumentsApplication;
 import dev.dworks.apps.anexplorer.R;
 import dev.dworks.apps.anexplorer.common.SettingsCommonActivity;
-import dev.dworks.apps.anexplorer.misc.AnalyticsManager;
 import dev.dworks.apps.anexplorer.misc.PreferenceUtils;
 import dev.dworks.apps.anexplorer.misc.SystemBarTintManager;
 import dev.dworks.apps.anexplorer.misc.Utils;
@@ -243,7 +242,6 @@ public class SettingsActivity extends SettingsCommonActivity {
     }
 
     public static void logSettingEvent(String key){
-        AnalyticsManager.logEvent("settings_"+key.toLowerCase());
     }
 
 }

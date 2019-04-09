@@ -46,7 +46,6 @@ import dev.dworks.apps.anexplorer.R;
 import dev.dworks.apps.anexplorer.common.DialogFragment;
 import dev.dworks.apps.anexplorer.misc.AsyncTask;
 import dev.dworks.apps.anexplorer.misc.ContentProviderClientCompat;
-import dev.dworks.apps.anexplorer.misc.CrashReportingManager;
 import dev.dworks.apps.anexplorer.misc.IconColorUtils;
 import dev.dworks.apps.anexplorer.misc.IconUtils;
 import dev.dworks.apps.anexplorer.misc.MimePredicate;
@@ -214,7 +213,6 @@ public class DetailFragment extends DialogFragment {
 					if (!(e instanceof OperationCanceledException)) {
 						Log.w(TAG_DETAIL, "Failed to load thumbnail for " + uri + ": " + e);
 					}
-					CrashReportingManager.logException(e);
 				} finally {
 					ContentProviderClientCompat.releaseQuietly(client);
 				}

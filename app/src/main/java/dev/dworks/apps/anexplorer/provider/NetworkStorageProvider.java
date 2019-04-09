@@ -25,7 +25,6 @@ import dev.dworks.apps.anexplorer.BuildConfig;
 import dev.dworks.apps.anexplorer.cursor.MatrixCursor;
 import dev.dworks.apps.anexplorer.cursor.MatrixCursor.RowBuilder;
 import dev.dworks.apps.anexplorer.libcore.io.IoUtils;
-import dev.dworks.apps.anexplorer.misc.CrashReportingManager;
 import dev.dworks.apps.anexplorer.misc.MimePredicate;
 import dev.dworks.apps.anexplorer.misc.MimeTypes;
 import dev.dworks.apps.anexplorer.misc.ParcelFileDescriptorUtil;
@@ -94,7 +93,6 @@ public class NetworkStorageProvider extends DocumentsProvider {
             }
         } catch (Exception e) {
             Log.w(TAG, "Failed to load some roots from " + ExplorerProvider.AUTHORITY + ": " + e);
-            CrashReportingManager.logException(e);
         } finally {
             IoUtils.closeQuietly(cursor);
         }
@@ -169,7 +167,7 @@ public class NetworkStorageProvider extends DocumentsProvider {
                 includeFile(result, null, new NetworkFile(parent, file));
             }
         } catch (IOException e) {
-            CrashReportingManager.logException(e);
+            Log.e("EXP", e.toString());
         }
         return result;
     }
@@ -198,7 +196,6 @@ public class NetworkStorageProvider extends DocumentsProvider {
 
             return null;
         } catch (Exception e) {
-            CrashReportingManager.logException(e);
             throw new FileNotFoundException("Failed to open document with id " + documentId +
                     " and mode " + mode);
         }

@@ -37,7 +37,6 @@ import dev.dworks.apps.anexplorer.common.DialogBuilder;
 import dev.dworks.apps.anexplorer.common.DialogFragment;
 import dev.dworks.apps.anexplorer.misc.AsyncTask;
 import dev.dworks.apps.anexplorer.misc.ContentProviderClientCompat;
-import dev.dworks.apps.anexplorer.misc.CrashReportingManager;
 import dev.dworks.apps.anexplorer.misc.FileUtils;
 import dev.dworks.apps.anexplorer.misc.ProviderExecutor;
 import dev.dworks.apps.anexplorer.misc.TintUtils;
@@ -136,7 +135,6 @@ public class RenameFragment extends DialogFragment {
                 return DocumentInfo.fromUri(resolver, childUri);
             } catch (Exception e) {
                 Log.w(TAG, "Failed to rename directory", e);
-                CrashReportingManager.logException(e);
                 return null;
             } finally {
             	ContentProviderClientCompat.releaseQuietly(client);

@@ -63,13 +63,13 @@ android {
             dimension "variant"
             buildConfigField "String", "GOOGLE_DRIVE_CLIENT_ID",  "$props.GOOGLE_DRIVE_CLIENT_ID"
         }
-        pro {
+        underground {
             applicationId "pl.sviete.dom.anexplorer.pro"
             dimension "variant"
             buildConfigField "String", "GOOGLE_DRIVE_CLIENT_ID",  "$props.GOOGLE_DRIVE_PRO_CLIENT_ID"
         }
-        underground {
-            applicationId "pl.sviete.dom.anexplorer.underground"
+        pro {
+            applicationId "pl.sviete.dom.anexplorer.pro"
             dimension "default"
             versionCode rootProject.generateVersionCode(1)
             buildConfigField "String", "GOOGLE_DRIVE_CLIENT_ID",  "$props.GOOGLE_DRIVE_PRO_CLIENT_ID"
@@ -131,10 +131,6 @@ dependencies {
     implementation 'com.github.javiersantos:AppUpdater:2.6.5'
     implementation 'com.nanohttpd:nanohttpd:2.2.0'
 
-    freeImplementation 'com.crashlytics.sdk.android:crashlytics:2.9.5'
-    freeImplementation "com.google.firebase:firebase-core:16.0.4"
-    freeImplementation "com.google.firebase:firebase-ads:17.0.0"
-    freeImplementation 'com.google.firebase:firebase-inappmessaging-display:17.0.3'
     freeImplementation 'com.anjlab.android.iab.v3:library:1.0.44'
 
     wearImplementation 'com.google.android.support:wearable:2.4.0'
@@ -156,5 +152,4 @@ android.signingConfigs.release.keyPassword props.keyAliasPassword
 
 if (getGradle().getStartParameter().getTaskRequests().toString().contains("Free")) {
     apply plugin: 'com.google.gms.google-services'
-    apply plugin: 'io.fabric'
 }

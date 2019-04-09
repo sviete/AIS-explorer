@@ -30,7 +30,6 @@ import dev.dworks.apps.anexplorer.cloud.CloudConnection;
 import dev.dworks.apps.anexplorer.common.DialogBuilder;
 import dev.dworks.apps.anexplorer.common.RecyclerFragment;
 import dev.dworks.apps.anexplorer.directory.DividerItemDecoration;
-import dev.dworks.apps.anexplorer.misc.AnalyticsManager;
 import dev.dworks.apps.anexplorer.misc.ProviderExecutor;
 import dev.dworks.apps.anexplorer.misc.RootsCache;
 import dev.dworks.apps.anexplorer.misc.Utils;
@@ -261,12 +260,10 @@ public class ConnectionsFragment extends RecyclerFragment
 
     private void addConnection() {
         CreateConnectionFragment.show(getAppCompatActivity().getSupportFragmentManager());
-        AnalyticsManager.logEvent("connection_add");
     }
 
     private void editConnection(int connection_id) {
         CreateConnectionFragment.show(getAppCompatActivity().getSupportFragmentManager(), connection_id);
-        AnalyticsManager.logEvent("connection_edit");
     }
 
     private void deleteConnection(final int connection_id) {
@@ -282,7 +279,6 @@ public class ConnectionsFragment extends RecyclerFragment
                     }
                     }).setNegativeButton(android.R.string.cancel,  null);
         builder.showDialog();
-        AnalyticsManager.logEvent("connection_delete");
     }
 
     public void openConnectionRoot(Cursor cursor) {
@@ -326,7 +322,6 @@ public class ConnectionsFragment extends RecyclerFragment
         CloudConnection cloudStorage = CloudConnection.createCloudConnections(getActivity(), cloudType);
         new CloudConnection.CreateConnectionTask(activity, cloudStorage).executeOnExecutor(
                 ProviderExecutor.forAuthority(CloudStorageProvider.AUTHORITY+cloudType));
-        AnalyticsManager.logEvent("add_cloud");
     }
 
     public void menuItemAction(MenuItem menuItem) {
@@ -354,7 +349,6 @@ public class ConnectionsFragment extends RecyclerFragment
 
             case R.id.network_ftp:
                 addConnection();
-                AnalyticsManager.logEvent("add_ftp");
                 break;
         }
     }

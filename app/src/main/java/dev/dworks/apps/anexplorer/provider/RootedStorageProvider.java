@@ -26,6 +26,7 @@ import android.os.Binder;
 import android.os.CancellationSignal;
 import android.os.ParcelFileDescriptor;
 import android.text.TextUtils;
+import android.util.Log;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -40,7 +41,6 @@ import dev.dworks.apps.anexplorer.BuildConfig;
 import dev.dworks.apps.anexplorer.R;
 import dev.dworks.apps.anexplorer.cursor.MatrixCursor;
 import dev.dworks.apps.anexplorer.cursor.MatrixCursor.RowBuilder;
-import dev.dworks.apps.anexplorer.misc.CrashReportingManager;
 import dev.dworks.apps.anexplorer.misc.FileUtils;
 import dev.dworks.apps.anexplorer.misc.MimePredicate;
 import dev.dworks.apps.anexplorer.misc.ParcelFileDescriptorUtil;
@@ -105,7 +105,7 @@ public class RootedStorageProvider extends StorageProvider {
             root.path = path;
             root.docId = getDocIdForRootFile(path);
         } catch (FileNotFoundException e) {
-            CrashReportingManager.logException(e);
+            Log.e("EXP", e.toString());
         }
 
         notifyRootsChanged(getContext());
@@ -398,7 +398,7 @@ public class RootedStorageProvider extends StorageProvider {
             }
 
         } catch (Exception e) {
-            CrashReportingManager.logException(e);
+            Log.e("EXP", e.toString());
         }
         return result;
     }

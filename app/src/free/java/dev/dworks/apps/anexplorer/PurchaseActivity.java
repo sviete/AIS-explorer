@@ -41,7 +41,6 @@ public class PurchaseActivity extends ActionBarActivity {
         setUpDefaultStatusBar();
 
         initControls();
-        DocumentsApplication.getInstance().initializeBilling();
     }
 
     private void initControls() {
@@ -95,7 +94,6 @@ public class PurchaseActivity extends ActionBarActivity {
             @Override
             protected Boolean doWork() {
                 DocumentsApplication.getInstance().loadOwnedPurchasesFromGoogle();
-                DocumentsApplication.getInstance().onPurchaseHistoryRestored();
                 return true;
             }
 
@@ -116,14 +114,11 @@ public class PurchaseActivity extends ActionBarActivity {
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (!DocumentsApplication.getInstance().handleActivityResult(requestCode, resultCode, data)) {
-            super.onActivityResult(requestCode, resultCode, data);
-        }
+        super.onActivityResult(requestCode, resultCode, data);
     }
 
     @Override
     public void onDestroy() {
-        DocumentsApplication.getInstance().releaseBillingProcessor();
         super.onDestroy();
     }
 

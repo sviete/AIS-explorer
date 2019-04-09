@@ -96,12 +96,10 @@ import dev.dworks.apps.anexplorer.fragment.RecentsCreateFragment;
 import dev.dworks.apps.anexplorer.fragment.SaveFragment;
 import dev.dworks.apps.anexplorer.fragment.ServerFragment;
 import dev.dworks.apps.anexplorer.libcore.io.IoUtils;
-import dev.dworks.apps.anexplorer.misc.AnalyticsManager;
 import dev.dworks.apps.anexplorer.misc.AppRate;
 import dev.dworks.apps.anexplorer.misc.AsyncTask;
 import dev.dworks.apps.anexplorer.misc.ConnectionUtils;
 import dev.dworks.apps.anexplorer.misc.ContentProviderClientCompat;
-import dev.dworks.apps.anexplorer.misc.CrashReportingManager;
 import dev.dworks.apps.anexplorer.misc.FileUtils;
 import dev.dworks.apps.anexplorer.misc.IntentUtils;
 import dev.dworks.apps.anexplorer.misc.MimePredicate;
@@ -315,7 +313,7 @@ public class DocumentsActivity extends BaseActivity implements MenuItem.OnMenuIt
                         new RestoreStackTask().execute();
                     }
                     catch (SQLiteFullException e){
-                        CrashReportingManager.logException(e);
+                        Log.e("EXP", e.toString());
                     }
             	}
             }
@@ -520,7 +518,6 @@ public class DocumentsActivity extends BaseActivity implements MenuItem.OnMenuIt
                 }
             } catch (IOException e) {
                 Log.w(TAG, "Failed to resume: " + e);
-                CrashReportingManager.logException(e);
             } finally {
                 IoUtils.closeQuietly(cursor);
             }
@@ -533,7 +530,6 @@ public class DocumentsActivity extends BaseActivity implements MenuItem.OnMenuIt
                     mState.stack.updateDocuments(getContentResolver());
                 } catch (FileNotFoundException e) {
                     Log.w(TAG, "Failed to restore stack: " + e);
-                    CrashReportingManager.logException(e);
                     mState.stack.reset();
                     mRestoredStack = false;
                 }
@@ -553,7 +549,6 @@ public class DocumentsActivity extends BaseActivity implements MenuItem.OnMenuIt
 	                }
 				} catch (FileNotFoundException e) {
 					e.printStackTrace();
-                    CrashReportingManager.logException(e);
 				}
             }
 
@@ -669,7 +664,6 @@ public class DocumentsActivity extends BaseActivity implements MenuItem.OnMenuIt
             if (mState.stack.size() <= 1) {
                 if(null != root){
                     setTitle(root.title);
-                    AnalyticsManager.setCurrentScreen(this, root.derivedTag);
                 }
                 mToolbarStack.setVisibility(View.GONE);
                 mToolbarStack.setAdapter(null);
@@ -707,7 +701,6 @@ public class DocumentsActivity extends BaseActivity implements MenuItem.OnMenuIt
                 onCurrentDirectoryChanged(ANIM_NONE);
                 Bundle params = new Bundle();
                 params.putString("query", query);
-                AnalyticsManager.logEvent("search", getCurrentRoot(), params);
                 return true;
             }
 
@@ -884,43 +877,35 @@ public class DocumentsActivity extends BaseActivity implements MenuItem.OnMenuIt
             setUserSortOrder(State.SORT_ORDER_DISPLAY_NAME);
             Bundle params = new Bundle();
             params.putString("type", "name");
-            AnalyticsManager.logEvent("sort_name", params);
             return true;
         } else if (id == R.id.menu_sort_date) {
             setUserSortOrder(State.SORT_ORDER_LAST_MODIFIED);
             Bundle params = new Bundle();
             params.putString("type", "modified");
-            AnalyticsManager.logEvent("sort_modified", params);
             return true;
         } else if (id == R.id.menu_sort_size) {
             setUserSortOrder(State.SORT_ORDER_SIZE);
             Bundle params = new Bundle();
             params.putString("type", "size");
-            AnalyticsManager.logEvent("sort_size", params);
             return true;
         } else if (id == R.id.menu_grid) {
             setUserMode(State.MODE_GRID);
             Bundle params = new Bundle();
             params.putString("type", "grid");
-            AnalyticsManager.logEvent("display_grid", params);
             return true;
         } else if (id == R.id.menu_list) {
             setUserMode(State.MODE_LIST);
             Bundle params = new Bundle();
             params.putString("type", "list");
-            AnalyticsManager.logEvent("display_list", params);
             return true;
         } else if (id == R.id.menu_settings) {
             startActivityForResult(new Intent(this, SettingsActivity.class), CODE_SETTINGS);
-            AnalyticsManager.logEvent("setting_open");
             return true;
         } else if (id == R.id.menu_about) {
             startActivity(new Intent(this, AboutActivity.class));
-            AnalyticsManager.logEvent("about_open");
             return true;
         } else if (id == R.id.menu_exit) {
             Bundle params = new Bundle();
-            AnalyticsManager.logEvent("app_exit");
             android.os.Process.killProcess(android.os.Process.myPid());
             return true;
         }
@@ -931,14 +916,12 @@ public class DocumentsActivity extends BaseActivity implements MenuItem.OnMenuIt
         CreateDirectoryFragment.show(getSupportFragmentManager());
         Bundle params = new Bundle();
         params.putString(FILE_TYPE, "folder");
-        AnalyticsManager.logEvent("create_folder", params);
     }
 
     private void createFile() {
         CreateFileFragment.show(getSupportFragmentManager(), "text/plain", "File");
         Bundle params = new Bundle();
         params.putString(FILE_TYPE, "file");
-        AnalyticsManager.logEvent("create_file", params);
     }
 
     private void uploadFile(){
@@ -952,7 +935,6 @@ public class DocumentsActivity extends BaseActivity implements MenuItem.OnMenuIt
         }
         Bundle params = new Bundle();
         params.putString(FILE_TYPE, "file");
-        AnalyticsManager.logEvent("upload_file", params);
     }
 
     /**
@@ -1229,7 +1211,6 @@ public class DocumentsActivity extends BaseActivity implements MenuItem.OnMenuIt
 	                cwd = result;
 	            }
 			} catch (FileNotFoundException e) {
-                CrashReportingManager.logException(e);
 			}
         }
         if(!SettingsActivity.getFolderAnimation(this)){
@@ -1316,7 +1297,7 @@ public class DocumentsActivity extends BaseActivity implements MenuItem.OnMenuIt
 
         @Override
         public void onRateAppClicked() {
-            AnalyticsManager.logEvent("app_rate");
+            //
         }
     };
 
@@ -1331,7 +1312,6 @@ public class DocumentsActivity extends BaseActivity implements MenuItem.OnMenuIt
 
         } catch (FileNotFoundException e) {
             Log.w(TAG, "Failed to restore stack: " + e);
-            CrashReportingManager.logException(e);
         }
     }
     public void onRootPicked(RootInfo root, RootInfo parentRoot) {
@@ -1375,7 +1355,6 @@ public class DocumentsActivity extends BaseActivity implements MenuItem.OnMenuIt
                 return DocumentInfo.fromUri(getContentResolver(), uri);
             } catch (FileNotFoundException e) {
                 Log.w(TAG, "Failed to find root", e);
-                CrashReportingManager.logException(e);
                 return null;
             }
         }
@@ -1423,7 +1402,6 @@ public class DocumentsActivity extends BaseActivity implements MenuItem.OnMenuIt
                         resolver, mCwd.derivedUri, mUri, mMimeType, mDisplayName);
             } catch (Exception e) {
                 Log.w(DocumentsActivity.TAG, "Failed to upload document", e);
-                CrashReportingManager.logException(e);
             } finally {
                 ContentProviderClientCompat.releaseQuietly(client);
             }
@@ -1529,7 +1507,6 @@ public class DocumentsActivity extends BaseActivity implements MenuItem.OnMenuIt
     				view.setDataAndType(Uri.fromFile(file), doc.mimeType);
 				} catch (Exception e) {
 					view.setDataAndType(doc.derivedUri, doc.mimeType);
-                    CrashReportingManager.logException(e);
 				}
             }
 
@@ -1546,7 +1523,7 @@ public class DocumentsActivity extends BaseActivity implements MenuItem.OnMenuIt
                         startActivity(view);
                     }
                 } catch (Exception e){
-                    CrashReportingManager.logException(e);
+                    Log.e("EXP", e.toString());
                 }
             }
             else{
@@ -1567,7 +1544,6 @@ public class DocumentsActivity extends BaseActivity implements MenuItem.OnMenuIt
                     startActivity(manage);
                 } catch (ActivityNotFoundException ex) {
                     // Fall back to viewing
-                    CrashReportingManager.logException(ex);
                     final Intent view = new Intent(Intent.ACTION_VIEW);
                     view.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION
                             | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
@@ -1577,7 +1553,6 @@ public class DocumentsActivity extends BaseActivity implements MenuItem.OnMenuIt
                         startActivity(view);
                     } catch (ActivityNotFoundException ex2) {
                         Utils.showError(this, R.string.toast_no_application);
-                        CrashReportingManager.logException(ex2);
                     }
                 }
             }
@@ -1703,7 +1678,6 @@ public class DocumentsActivity extends BaseActivity implements MenuItem.OnMenuIt
                 		resolver, cwd.derivedUri, mMimeType, mDisplayName);
             } catch (Exception e) {
                 Log.w(TAG, "Failed to create document", e);
-                CrashReportingManager.logException(e);
             } finally {
             	ContentProviderClientCompat.releaseQuietly(client);
             }
@@ -1811,14 +1785,12 @@ public class DocumentsActivity extends BaseActivity implements MenuItem.OnMenuIt
     			} catch (Exception e) {
     				Log.w(TAG, "Failed to move " + doc);
     				hadTrouble = true;
-                    CrashReportingManager.logException(e);
     			}
     		}
 
             Bundle params2 = new Bundle();
             params2.putBoolean(FILE_MOVE, deleteAfter);
             params2.putInt(FILE_COUNT, docs.size());
-            AnalyticsManager.logEvent("files_moved", params2);
 
             return hadTrouble;
         }

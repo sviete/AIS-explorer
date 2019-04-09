@@ -554,7 +554,7 @@ public class Utils extends UtilsFlavour{
         result.putExtra(Intent.EXTRA_EMAIL, new String[]{"admin@sviete.pl"});
         result.putExtra(Intent.EXTRA_SUBJECT, subject);
         result.putExtra(Intent.EXTRA_TEXT, "AIS-Explorer Feedback"
-                + getSuffix() + " v" + BuildConfig.VERSION_NAME);
+                + getSuffix() + " v3");
 
         activity.startActivity(Intent.createChooser(result, title));
     }

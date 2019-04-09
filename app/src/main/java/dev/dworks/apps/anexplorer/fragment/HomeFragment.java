@@ -51,7 +51,6 @@ import dev.dworks.apps.anexplorer.common.DialogBuilder;
 import dev.dworks.apps.anexplorer.common.RecyclerFragment;
 import dev.dworks.apps.anexplorer.cursor.LimitCursorWrapper;
 import dev.dworks.apps.anexplorer.loader.RecentLoader;
-import dev.dworks.apps.anexplorer.misc.AnalyticsManager;
 import dev.dworks.apps.anexplorer.misc.AsyncTask;
 import dev.dworks.apps.anexplorer.misc.IconHelper;
 import dev.dworks.apps.anexplorer.misc.IconUtils;
@@ -283,7 +282,6 @@ public class HomeFragment extends RecyclerFragment implements HomeAdapter.OnItem
                     } else  {
                         Utils.showSnackBar(getActivity(), "Coming Soon!");
                     }
-                    AnalyticsManager.logEvent("storage_analyze", params);
                 }
                 break;
         }
@@ -293,7 +291,6 @@ public class HomeFragment extends RecyclerFragment implements HomeAdapter.OnItem
     private void cleanRAM(){
         Bundle params = new Bundle();
         new OperationTask(processRoot).execute();
-        AnalyticsManager.logEvent("process_clean", params);
     }
 
     private class OperationTask extends AsyncTask<Void, Void, Boolean> {
@@ -358,7 +355,6 @@ public class HomeFragment extends RecyclerFragment implements HomeAdapter.OnItem
     private void openRoot(RootInfo rootInfo){
         DocumentsActivity activity = ((DocumentsActivity)getActivity());
         activity.onRootPicked(rootInfo, mHomeRoot);
-        AnalyticsManager.logEvent("open_shortcuts", rootInfo ,new Bundle());
     }
 
     public void cleanupMemory(Context context){
@@ -374,7 +370,6 @@ public class HomeFragment extends RecyclerFragment implements HomeAdapter.OnItem
         Bundle params = new Bundle();
         String type = IconUtils.getTypeNameFromMimeType(doc.mimeType);
         params.putString(FILE_TYPE, type);
-        AnalyticsManager.logEvent("open_image_recent", params);
     }
 
     @Override

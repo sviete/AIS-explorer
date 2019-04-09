@@ -77,7 +77,7 @@
     <string name="app_ver">AIS explorer</string>
     <string name="app_company">Developed By Sviete</string>
     <string name="app_url">https://www.sviete.pl</string>
-    <string name="app_about_info">Zapewnia funkcjonalność przeglądarki plików w systemie AIS dom.</string>
+    <string name="app_about_info">Zapewnia funkcjonalność managera plików, procesów i aplikcji w systemie AIS dom.</string>
     <string name="app_contrib">Contributions by Sviete</string>
     <string name="app_about">Aplikacja pomaga uporządkować pliki, zarządzać aplikacjami, monitorować procesy, edytować konfigurację.</string>
     <string name="twitter"><a href="https://sviete.pl">  Twitter</a></string>

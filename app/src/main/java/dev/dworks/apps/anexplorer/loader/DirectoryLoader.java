@@ -40,7 +40,6 @@ import dev.dworks.apps.anexplorer.fragment.DirectoryFragment;
 import dev.dworks.apps.anexplorer.libcore.io.IoUtils;
 import dev.dworks.apps.anexplorer.misc.AsyncTaskLoader;
 import dev.dworks.apps.anexplorer.misc.ContentProviderClientCompat;
-import dev.dworks.apps.anexplorer.misc.CrashReportingManager;
 import dev.dworks.apps.anexplorer.misc.ProviderExecutor;
 import dev.dworks.apps.anexplorer.model.DirectoryResult;
 import dev.dworks.apps.anexplorer.model.DocumentInfo;
@@ -107,7 +106,7 @@ public class DirectoryLoader extends AsyncTaskLoader<DirectoryResult> {
             } catch (FileNotFoundException e) {
                 Log.w(TAG, "Failed to query", e);
                 result.exception = e;
-                CrashReportingManager.logException(e);
+                Log.e("EXP", e.toString());
                 return result;
             }
         }
@@ -177,7 +176,6 @@ public class DirectoryLoader extends AsyncTaskLoader<DirectoryResult> {
             result.cursor = cursor;
         } catch (Exception e) {
             Log.w(TAG, "Failed to query", e);
-            CrashReportingManager.logException(e);
             result.exception = e;
         } finally {
             synchronized (this) {

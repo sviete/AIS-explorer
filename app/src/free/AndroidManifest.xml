@@ -13,10 +13,6 @@
             android:theme="@android:style/Theme.Translucent"
             android:configChanges="keyboard|keyboardHidden|orientation|screenLayout|uiMode|screenSize|smallestScreenSize" />
         <meta-data
-            android:name="firebase_crashlytics_collection_enabled"
-            android:value="false" />
-
-        <meta-data
             android:name="com.google.android.gms.ads.APPLICATION_ID"
             android:value="ca-app-pub-6407484780907805~2863651670"/>
     </application>

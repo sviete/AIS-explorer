@@ -31,6 +31,7 @@ import android.graphics.drawable.LayerDrawable;
 import android.os.Bundle;
 import android.preference.Preference;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -41,7 +42,6 @@ import androidx.vectordrawable.graphics.drawable.VectorDrawableCompat;
 import dev.dworks.apps.anexplorer.R;
 import dev.dworks.apps.anexplorer.common.DialogBuilder;
 import dev.dworks.apps.anexplorer.misc.ColorPalette;
-import dev.dworks.apps.anexplorer.misc.CrashReportingManager;
 import dev.dworks.apps.anexplorer.misc.Utils;
 import dev.dworks.apps.anexplorer.setting.SettingsActivity;
 
@@ -199,7 +199,7 @@ public class MaterialColorPreference extends Preference {
                     try{
                         tintButtons(getDialog());
                     } catch (Exception e){
-                        CrashReportingManager.logException(e);
+                        Log.e("EXP", e.toString());
                     }
                 }
             });

@@ -23,7 +23,6 @@ import android.widget.TextView;
 
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.ShareCompat;
-import dev.dworks.apps.anexplorer.misc.AnalyticsManager;
 import dev.dworks.apps.anexplorer.misc.ColorUtils;
 import dev.dworks.apps.anexplorer.misc.SystemBarTintManager;
 import dev.dworks.apps.anexplorer.misc.Utils;
@@ -63,7 +62,6 @@ public class AboutActivity extends AboutVariantFlavour implements View.OnClickLi
 		} else {
 			view.setBackgroundColor(color);
 		}
-		initAd();
 		initControls();
 	}
 
@@ -77,7 +75,7 @@ public class AboutActivity extends AboutVariantFlavour implements View.OnClickLi
 		int accentColor = ColorUtils.getTextColorForBackground(SettingsActivity.getPrimaryColor());
 		TextView logo = (TextView)findViewById(R.id.logo);
 		logo.setTextColor(accentColor);
-		String header = logo.getText() + getSuffix() + " v" + BuildConfig.VERSION_NAME + (BuildConfig.DEBUG ? " Debug" : "");
+		String header = logo.getText() + getSuffix() + " v3" + (BuildConfig.DEBUG ? " Debug" : "");
 		logo.setText(header);
 
 		TextView action_rate = (TextView)findViewById(R.id.action_rate);
@@ -120,15 +118,12 @@ public class AboutActivity extends AboutVariantFlavour implements View.OnClickLi
 				break;
 			case R.id.action_rate:
 				openPlaystore(this);
-				AnalyticsManager.logEvent("app_rate");
 				break;
 			case R.id.action_sponsor:
 				openGithub(this);
-				AnalyticsManager.logEvent("app_sponsor");
 				break;
 			case R.id.action_support:
 				openGithub(this);
-				AnalyticsManager.logEvent("app_love");
 				break;
 			case R.id.action_share:
 
@@ -140,7 +135,6 @@ public class AboutActivity extends AboutVariantFlavour implements View.OnClickLi
 						.setType("text/plain")
 						.setChooserTitle("Share AIS Explorer")
 						.startChooser();
-				AnalyticsManager.logEvent("app_share");
 				break;
 		}
 	}

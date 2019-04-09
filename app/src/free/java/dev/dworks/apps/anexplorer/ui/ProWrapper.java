@@ -6,7 +6,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.FrameLayout;
 
-import dev.dworks.apps.anexplorer.AppPaymentFlavour;
 import dev.dworks.apps.anexplorer.DocumentsApplication;
 import dev.dworks.apps.anexplorer.R;
 
@@ -35,7 +34,7 @@ public class ProWrapper extends FrameLayout {
                 DocumentsApplication.openPurchaseActivity(getContext());
             }
         });
-        setVisibility(AppPaymentFlavour.isPurchased() ? GONE : VISIBLE);
+        setVisibility(GONE);
     }
 
 }

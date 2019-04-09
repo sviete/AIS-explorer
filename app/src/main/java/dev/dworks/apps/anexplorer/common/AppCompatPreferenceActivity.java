@@ -29,7 +29,6 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatDelegate;
 import androidx.appcompat.widget.Toolbar;
-import dev.dworks.apps.anexplorer.misc.AnalyticsManager;
 import dev.dworks.apps.anexplorer.misc.Utils;
 
 /**
@@ -61,7 +60,6 @@ public abstract class AppCompatPreferenceActivity extends PreferenceActivity {
             }
         }
         super.onCreate(savedInstanceState);
-        AnalyticsManager.setCurrentScreen(this, getTag());
     }
 
     @Override

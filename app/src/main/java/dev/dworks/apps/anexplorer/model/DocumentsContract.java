@@ -55,7 +55,6 @@ import androidx.annotation.Nullable;
 import androidx.exifinterface.media.ExifInterface;
 import dev.dworks.apps.anexplorer.libcore.io.IoUtils;
 import dev.dworks.apps.anexplorer.misc.ContentProviderClientCompat;
-import dev.dworks.apps.anexplorer.misc.CrashReportingManager;
 import dev.dworks.apps.anexplorer.misc.ImageUtils;
 import dev.dworks.apps.anexplorer.misc.OsCompat;
 import dev.dworks.apps.anexplorer.misc.Utils;
@@ -1051,7 +1050,7 @@ public final class DocumentsContract {
             afd = openTypedAssetFileDescriptor(client, documentUri, "image/*", openOpts, signal);
 
         } catch (Exception e) {
-            CrashReportingManager.logException(e);
+            Log.e(TAG, e.toString());
         }
         return afd;
     }
@@ -1440,7 +1439,7 @@ public final class DocumentsContract {
                 return buildAssetFileDescriptor(pfd, thumb[0], thumb[1], extras);
             }
         } catch (IOException e) {
-            CrashReportingManager.logException(e);
+            Log.e(TAG, e.toString());
         }
         return buildAssetFileDescriptor(pfd, 0, AssetFileDescriptor.UNKNOWN_LENGTH, extras);
     }
