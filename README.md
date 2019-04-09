@@ -45,12 +45,11 @@ Other Features
 * Acts as a Standalone File Picker from other applications such as attaching document files from gmail
 * Has high quality thumbnail support in list / gridview for all types of file like images, videos, album art for music files and applications
 
-
 Developed By
 ============
-* Sviete.pl
+* AI-Speaker.com
 * Based on AnExplorer by Hari Krishna Dulipudi
-=======
+
 
 License
 =======

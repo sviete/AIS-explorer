@@ -30,20 +30,10 @@ import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
-import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Environment;
 import android.os.ParcelFileDescriptor;
-import com.google.android.material.snackbar.Snackbar;
-
-import androidx.annotation.IntDef;
-import androidx.vectordrawable.graphics.drawable.VectorDrawableCompat;
-import androidx.core.app.ShareCompat;
-import androidx.core.content.ContextCompat;
-import androidx.core.graphics.drawable.DrawableCompat;
-import androidx.core.text.TextUtilsCompat;
-import androidx.appcompat.app.AppCompatDelegate;
 import android.text.Html;
 import android.text.Spanned;
 import android.text.format.DateUtils;
@@ -54,7 +44,6 @@ import android.view.KeyEvent;
 import android.view.View;
 import android.view.ViewConfiguration;
 import android.webkit.WebView;
-import android.widget.Button;
 
 import java.io.File;
 import java.lang.annotation.Retention;
@@ -62,14 +51,20 @@ import java.lang.annotation.RetentionPolicy;
 import java.util.List;
 import java.util.Locale;
 
+import androidx.annotation.IntDef;
+import androidx.appcompat.app.AppCompatDelegate;
+import androidx.core.app.ShareCompat;
+import androidx.core.content.ContextCompat;
+import androidx.core.text.TextUtilsCompat;
+import androidx.vectordrawable.graphics.drawable.VectorDrawableCompat;
 import dev.dworks.apps.anexplorer.BuildConfig;
 import dev.dworks.apps.anexplorer.DocumentsApplication;
-import dev.dworks.apps.anexplorer.R;
 import dev.dworks.apps.anexplorer.common.ActionBarActivity;
 import dev.dworks.apps.anexplorer.model.DocumentsContract;
 import dev.dworks.apps.anexplorer.model.RootInfo;
 import dev.dworks.apps.anexplorer.setting.SettingsActivity;
 
+import static android.content.Intent.ACTION_SENDTO;
 import static android.service.quicksettings.TileService.ACTION_QS_TILE_PREFERENCES;
 import static com.google.android.material.snackbar.Snackbar.LENGTH_SHORT;
 
@@ -113,11 +108,11 @@ public class Utils extends UtilsFlavour{
     public static boolean hasJellyBeanMR1() {
         return Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1;
     }
-    
+
     public static boolean hasJellyBeanMR2() {
         return Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2;
     }
-    
+
     public static boolean hasKitKat() {
         return Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT;
     }
@@ -157,7 +152,7 @@ public class Utils extends UtilsFlavour{
     public static boolean hasMoreHeap(){
     	return Runtime.getRuntime().maxMemory() > 20971520;
     }
-    
+
     @TargetApi(Build.VERSION_CODES.KITKAT)
     public static boolean isLowRamDevice(Context context) {
     	if(Utils.hasKitKat()){
@@ -170,7 +165,7 @@ public class Utils extends UtilsFlavour{
     public static boolean isTablet(Context context) {
 		return context.getResources().getConfiguration().smallestScreenWidthDp >= 600;
 	}
-    
+
 	public static int parseMode(String mode) {
         final int modeBits;
         if ("r".equals(mode)) {
@@ -195,7 +190,7 @@ public class Utils extends UtilsFlavour{
         }
         return modeBits;
     }
-    
+
     /**
      * Recursively delete everything in {@code dir}.
      */
@@ -209,11 +204,11 @@ public class Utils extends UtilsFlavour{
                 deleteContents(file);
             }
             if (!file.delete()) {
-                
+
             }
         }
     }
-    
+
     public static boolean isRooted(){
         for (String p : Utils.BinaryPlaces) {
             File su = new File(p + "su");
@@ -223,7 +218,7 @@ public class Utils extends UtilsFlavour{
         }
         return false;//RootTools.isRootAvailable();
     }
-    
+
     public static String formatTime(Context context, long when) {
 		// TODO: DateUtils should make this easier
 		Time then = new Time();
@@ -550,13 +545,18 @@ public class Utils extends UtilsFlavour{
     }
 
     public static void openFeedback(Activity activity){
-        ShareCompat.IntentBuilder
-                .from(activity)
-                .setEmailTo(new String[]{"admin@sviete.pl"})
-                .setSubject("AIS explorer Feedback" + getSuffix())
-                .setType("text/email")
-                .setChooserTitle("Send Feedback")
-                .startChooser();
+        sendEmail(activity, "Send Feedback", "AIS-Explorer Feedback");
+    }
+
+    public static void sendEmail(Activity activity, String title, String subject){
+        final Intent result = new Intent(ACTION_SENDTO);
+        result.setData(Uri.parse("mailto:"));
+        result.putExtra(Intent.EXTRA_EMAIL, new String[]{"admin@sviete.pl"});
+        result.putExtra(Intent.EXTRA_SUBJECT, subject);
+        result.putExtra(Intent.EXTRA_TEXT, "AIS-Explorer Feedback"
+                + getSuffix() + " v" + BuildConfig.VERSION_NAME);
+
+        activity.startActivity(Intent.createChooser(result, title));
     }
 
     public static void openPlaystore(Context çontext){
