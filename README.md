@@ -1,9 +1,18 @@
-AIS Explorer All-in-One File Manager
+AIS Explorer File Manager
 ==================================
 
 AIS Explorer File Manager (File Explorer) is an all-in-one file management tools.
 
 It is Simple, Small, Fast and Efficient File Explorer and One of the Best File Manager apps on Google Play Store. Only file manager to support RTL and show size of folders across the storages. File Manager is designed for all android devices including Phones, Phablets, Tablets and Android TV. It's a fully designed with Material guidelines by Google. It supports all Android versions from Jellybean, Kitkat, Marshmallow to Nougat. We dont take any unnecessary permissions, **no ads, no micro payment, all free and open**.
+
+
+> This File Manager is used in AI Speaker project, but it can be download for free from Google Play and used on any Android device 
+
+https://play.google.com/store/apps/details?id=pl.sviete.dom.anexplorer.pro
+
+![Screen](https://github.com/sviete/AIS-explorer/raw/master/apk-screen.png)
+
+
 
 Top Features
 ============
