@@ -1,7 +1,5 @@
 package dev.dworks.apps.anexplorer.network;
 
-import android.util.Log;
-
 import org.apache.commons.net.ftp.FTP;
 import org.apache.commons.net.ftp.FTPFile;
 import org.apache.commons.net.ftp.FTPReply;
@@ -10,6 +8,7 @@ import org.apache.commons.net.ftp.FTPSClient;
 import java.io.IOException;
 import java.io.InputStream;
 
+import dev.dworks.apps.anexplorer.misc.CrashReportingManager;
 import dev.dworks.apps.anexplorer.misc.LogUtils;
 
 /**
@@ -117,7 +116,7 @@ public class FTPSNetworkClient extends NetworkClient {
 
         } catch (IOException e) {
             LogUtils.LOGE(TAG, "Error retrieving file from FTP server: " + host, e);
-            Log.e("EXP", e.toString());
+            CrashReportingManager.logException(e);
         }
         return null;
     }

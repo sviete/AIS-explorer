@@ -45,10 +45,6 @@ import android.widget.ListView;
 import android.widget.PopupMenu;
 import android.widget.TextView;
 
-import com.google.android.material.snackbar.Snackbar;
-
-import java.util.ArrayList;
-
 import androidx.appcompat.view.ActionMode;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
@@ -57,6 +53,11 @@ import androidx.loader.app.LoaderManager;
 import androidx.loader.app.LoaderManager.LoaderCallbacks;
 import androidx.loader.content.Loader;
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.google.android.material.snackbar.Snackbar;
+
+import java.util.ArrayList;
+
 import dev.dworks.apps.anexplorer.BaseActivity;
 import dev.dworks.apps.anexplorer.BaseActivity.State;
 import dev.dworks.apps.anexplorer.DocumentsActivity;
@@ -72,7 +73,9 @@ import dev.dworks.apps.anexplorer.directory.MultiChoiceHelper;
 import dev.dworks.apps.anexplorer.directory.MultiChoiceHelper.MultiChoiceModeListener;
 import dev.dworks.apps.anexplorer.loader.DirectoryLoader;
 import dev.dworks.apps.anexplorer.loader.RecentLoader;
+import dev.dworks.apps.anexplorer.misc.AnalyticsManager;
 import dev.dworks.apps.anexplorer.misc.AsyncTask;
+import dev.dworks.apps.anexplorer.misc.CrashReportingManager;
 import dev.dworks.apps.anexplorer.misc.IconHelper;
 import dev.dworks.apps.anexplorer.misc.IconUtils;
 import dev.dworks.apps.anexplorer.misc.MimePredicate;
@@ -91,6 +94,7 @@ import dev.dworks.apps.anexplorer.provider.ExternalStorageProvider;
 import dev.dworks.apps.anexplorer.provider.RecentsProvider;
 import dev.dworks.apps.anexplorer.provider.RecentsProvider.StateColumns;
 import dev.dworks.apps.anexplorer.setting.SettingsActivity;
+import dev.dworks.apps.anexplorer.transfer.TransferHelper;
 import dev.dworks.apps.anexplorer.ui.CompatTextView;
 import dev.dworks.apps.anexplorer.ui.MaterialProgressBar;
 import dev.dworks.apps.anexplorer.ui.RecyclerViewPlus;
@@ -264,7 +268,7 @@ public class DirectoryFragment extends RecyclerFragment implements MenuItem.OnMe
 		doc = getArguments().getParcelable(EXTRA_DOC);
 
 		if(null != root && root.isSecondaryStorage() && state.action == ACTION_BROWSE){
-			if(!doc.isWriteSupported() && !context.getSAFPermissionRequested()){
+			if((null != doc && !doc.isWriteSupported()) && !context.getSAFPermissionRequested()){
 				context.setSAFPermissionRequested(true);
 				SAFManager.takeCardUriPermission(getActivity(), root, doc);
 			}
@@ -554,6 +558,11 @@ public class DirectoryFragment extends RecyclerFragment implements MenuItem.OnMe
 					Bundle params = new Bundle();
 					String type = IconUtils.getTypeNameFromMimeType(doc.mimeType);
 					params.putString(FILE_TYPE, type);
+					if(doc.isDirectory()) {
+						AnalyticsManager.logEvent("browse", root, params);
+					} else {
+						AnalyticsManager.logEvent("open" + "_" + type, params);
+					}
 				}
 			}
 		}
@@ -759,6 +768,7 @@ public class DirectoryFragment extends RecyclerFragment implements MenuItem.OnMe
 			String type = IconUtils.getTypeNameFromMimeType(doc.mimeType);
 			params.putString(FILE_TYPE, type);
 			params.putInt(FILE_COUNT, docs.size());
+			AnalyticsManager.logEvent("share"+"_"+type, params);
 
 		} else if (docs.size() > 1) {
 			intent = new Intent(Intent.ACTION_SEND_MULTIPLE);
@@ -781,6 +791,7 @@ public class DirectoryFragment extends RecyclerFragment implements MenuItem.OnMe
 
 			Bundle params = new Bundle();
 			params.putInt(FILE_COUNT, docs.size());
+			AnalyticsManager.logEvent("share", params);
 
 		} else {
 			return;
@@ -816,6 +827,7 @@ public class DirectoryFragment extends RecyclerFragment implements MenuItem.OnMe
                 hadTrouble = ! DocumentsContract.deleteDocument(resolver, doc.derivedUri);
 			} catch (Exception e) {
 				Log.w(TAG, "Failed to delete " + doc);
+				CrashReportingManager.logException(e);
 				hadTrouble = true;
 			}
 		}
@@ -862,6 +874,7 @@ public class DirectoryFragment extends RecyclerFragment implements MenuItem.OnMe
 			DocumentsContract.deleteDocument(resolver, doc.derivedUri);
 		} catch (Exception e) {
 			Log.w(TAG, "Failed to delete " + doc);
+			CrashReportingManager.logException(e);
 			hadTrouble = true;
 		}
 
@@ -929,16 +942,19 @@ public class DirectoryFragment extends RecyclerFragment implements MenuItem.OnMe
 				result = onSaveDocuments(docs);
 				params2 = new Bundle();
 				params2.putInt(FILE_COUNT, docs.size());
+				AnalyticsManager.logEvent("backup", params2);
 				break;
 
             case R.id.menu_uncompress:
                 result = onUncompressDocuments(docs);
 				params2 = new Bundle();
+				AnalyticsManager.logEvent("uncompress", params2);
                 break;
             case R.id.menu_compress:
                 result = onCompressDocuments(doc, docs);
 				params2 = new Bundle();
 				params2.putInt(FILE_COUNT, docs.size());
+				AnalyticsManager.logEvent("compress", params2);
                 break;
 			}
 
@@ -1033,6 +1049,7 @@ public class DirectoryFragment extends RecyclerFragment implements MenuItem.OnMe
                 hadTrouble = DocumentsContract.copyDocument(resolver, doc.derivedUri, appBackupUri) == null;
 			} catch (Exception e) {
 				Log.w(TAG, "Failed to save " + doc);
+				CrashReportingManager.logException(e);
 				hadTrouble = true;
 			}
 		}
@@ -1058,6 +1075,7 @@ public class DirectoryFragment extends RecyclerFragment implements MenuItem.OnMe
             hadTrouble = ! DocumentsContract.compressDocument(resolver, doc.derivedUri, documentIds);
         } catch (Exception e) {
             Log.w(TAG, "Failed to Compress " + doc);
+			CrashReportingManager.logException(e);
             hadTrouble = true;
         }
 
@@ -1080,6 +1098,7 @@ public class DirectoryFragment extends RecyclerFragment implements MenuItem.OnMe
                 hadTrouble = ! DocumentsContract.uncompressDocument(resolver, doc.derivedUri);
             } catch (Exception e) {
                 Log.w(TAG, "Failed to Uncompress " + doc);
+				CrashReportingManager.logException(e);
                 hadTrouble = true;
             }
         }
@@ -1098,7 +1117,7 @@ public class DirectoryFragment extends RecyclerFragment implements MenuItem.OnMe
 				return;
 			}
 			if(root.isRootedStorage() && !isRooted()){
-				mEmptyView.setText(R.string.no_root);
+				mEmptyView.setText("Your phone is not rooted!");
 			} else if(root.isNetworkStorage()){
 				mEmptyView.setText("Couldnt connect to the server!");
 			} else  {
@@ -1230,8 +1249,13 @@ public class DirectoryFragment extends RecyclerFragment implements MenuItem.OnMe
 		final int id = item.getItemId();
 		Bundle params = new Bundle();
 		switch (id) {
+
 			case R.id.menu_share:
 				onShareDocuments(docs);
+				return true;
+
+			case R.id.menu_transfer:
+				TransferHelper.sendDocs(getActivity(), docs);
 				return true;
 
 			case R.id.menu_copy:
@@ -1267,6 +1291,7 @@ public class DirectoryFragment extends RecyclerFragment implements MenuItem.OnMe
 				}
 				String type = IconUtils.getTypeNameFromMimeType(docs.get(0).mimeType);
 				params.putString(FILE_TYPE, type);
+				AnalyticsManager.logEvent("details", params);
 				return true;
 			case R.id.menu_info:
 				infoDocument(docs.get(0));
@@ -1286,6 +1311,7 @@ public class DirectoryFragment extends RecyclerFragment implements MenuItem.OnMe
 				}
 				selectAll = !selectAll;
 				params.putInt(FILE_COUNT, count);
+				AnalyticsManager.logEvent("select", params);
 				return false;
 
 			default:
@@ -1305,6 +1331,7 @@ public class DirectoryFragment extends RecyclerFragment implements MenuItem.OnMe
 			RootsCache.updateRoots(getActivity(), ExternalStorageProvider.AUTHORITY);
 		}
 		Bundle params = new Bundle();
+		AnalyticsManager.logEvent("bookmarked", root, params);
 	}
 
 	private void stopDocument(ArrayList<DocumentInfo> docs, int type) {
@@ -1312,8 +1339,10 @@ public class DirectoryFragment extends RecyclerFragment implements MenuItem.OnMe
 		params.putInt(FILE_COUNT, docs.size());
 		if (isApp && root.isAppPackage()) {
 			forceStopApps(docs);
+			AnalyticsManager.logEvent("stop", params);
 		} else {
 			deleteFiles(docs, type, isApp && root.isAppProcess() ? "Stop processes ?" : "Delete files ?");
+			AnalyticsManager.logEvent("delete", params);
 		}
 	}
 
@@ -1323,8 +1352,10 @@ public class DirectoryFragment extends RecyclerFragment implements MenuItem.OnMe
 		if (isApp && root.isAppPackage()) {
 			docsAppUninstall = docs;
 			onUninstall();
+			AnalyticsManager.logEvent("uninstall", params);
 		} else {
 			deleteFiles(docs, type, "Delete files ?");
+			AnalyticsManager.logEvent("delete", params);
 		}
 	}
 
@@ -1341,6 +1372,7 @@ public class DirectoryFragment extends RecyclerFragment implements MenuItem.OnMe
 		Bundle params = new Bundle();
 		String type = IconUtils.getTypeNameFromMimeType(doc.mimeType);
 		params.putString(FILE_TYPE, type);
+		AnalyticsManager.logEvent("open"+"_"+type, params);
 	}
 
 	private void moveDocument(ArrayList<DocumentInfo> docs, boolean move) {
@@ -1348,12 +1380,14 @@ public class DirectoryFragment extends RecyclerFragment implements MenuItem.OnMe
 		Bundle params = new Bundle();
 		params.putBoolean(FILE_MOVE, move);
 		params.putInt(FILE_COUNT, docs.size());
+		AnalyticsManager.logEvent("move_"+move, params);
 	}
 
 	private void renameDocument(DocumentInfo doc){
 		RenameFragment.show(((BaseActivity) getActivity()).getSupportFragmentManager(), doc);
 		Bundle params = new Bundle();
 		params.putString(FILE_TYPE, IconUtils.getTypeNameFromMimeType(doc.mimeType));
+		AnalyticsManager.logEvent("rename", params);
 	}
 
 	private void infoDocument(DocumentInfo doc) {
@@ -1367,6 +1401,7 @@ public class DirectoryFragment extends RecyclerFragment implements MenuItem.OnMe
 		Bundle params = new Bundle();
 		String type = IconUtils.getTypeNameFromMimeType(doc.mimeType);
 		params.putString(FILE_TYPE, type);
+		AnalyticsManager.logEvent("details", params);
 	}
 
 

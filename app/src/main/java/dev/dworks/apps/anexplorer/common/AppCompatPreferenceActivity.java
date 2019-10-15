@@ -29,6 +29,7 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatDelegate;
 import androidx.appcompat.widget.Toolbar;
+import dev.dworks.apps.anexplorer.misc.AnalyticsManager;
 import dev.dworks.apps.anexplorer.misc.Utils;
 
 /**
@@ -45,7 +46,7 @@ public abstract class AppCompatPreferenceActivity extends PreferenceActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        Utils.changeThemeStyle(getDelegate());
+        Utils.changeThemeStyle();
         getDelegate().installViewFactory();
         getDelegate().onCreate(savedInstanceState);
         if (mDelegate.applyDayNight() && mThemeId != 0) {
@@ -60,6 +61,7 @@ public abstract class AppCompatPreferenceActivity extends PreferenceActivity {
             }
         }
         super.onCreate(savedInstanceState);
+        AnalyticsManager.setCurrentScreen(this, getTag());
     }
 
     @Override
@@ -151,7 +153,7 @@ public abstract class AppCompatPreferenceActivity extends PreferenceActivity {
 
     @Override
     public void recreate() {
-        Utils.changeThemeStyle(getDelegate());
+        Utils.changeThemeStyle();
         super.recreate();
     }
 

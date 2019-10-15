@@ -142,6 +142,7 @@ public class AppRate implements View.OnClickListener{
         boolean clicked = settings.getBoolean(KEY_CLICKED, false);
         if (clicked) return;
         int count = settings.getInt(KEY_COUNT, 0);
+
 //        if (count == initialLaunchCount) {
 //            showAppRate();
 //        } else if (policy == RetryPolicy.INCREMENTAL && count % initialLaunchCount == 0) {

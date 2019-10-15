@@ -39,6 +39,7 @@ import dev.dworks.apps.anexplorer.common.DialogBuilder;
 import dev.dworks.apps.anexplorer.common.DialogFragment;
 import dev.dworks.apps.anexplorer.misc.AsyncTask;
 import dev.dworks.apps.anexplorer.misc.ContentProviderClientCompat;
+import dev.dworks.apps.anexplorer.misc.CrashReportingManager;
 import dev.dworks.apps.anexplorer.misc.FileUtils;
 import dev.dworks.apps.anexplorer.misc.ProviderExecutor;
 import dev.dworks.apps.anexplorer.misc.TintUtils;
@@ -140,7 +141,7 @@ public class CreateFileFragment extends DialogFragment {
                         resolver, mCwd.derivedUri, mMimeType, mDisplayName);
             } catch (Exception e) {
                 Log.w(DocumentsActivity.TAG, "Failed to create document", e);
-                Log.e("EXP", e.toString());
+                CrashReportingManager.logException(e);
             } finally {
                 ContentProviderClientCompat.releaseQuietly(client);
             }

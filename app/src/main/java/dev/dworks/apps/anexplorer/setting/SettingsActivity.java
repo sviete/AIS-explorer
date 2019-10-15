@@ -29,10 +29,12 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.preference.PreferenceManager;
 
+import androidx.appcompat.app.AppCompatDelegate;
 import androidx.core.content.ContextCompat;
 import dev.dworks.apps.anexplorer.DocumentsApplication;
 import dev.dworks.apps.anexplorer.R;
 import dev.dworks.apps.anexplorer.common.SettingsCommonActivity;
+import dev.dworks.apps.anexplorer.misc.AnalyticsManager;
 import dev.dworks.apps.anexplorer.misc.PreferenceUtils;
 import dev.dworks.apps.anexplorer.misc.SystemBarTintManager;
 import dev.dworks.apps.anexplorer.misc.Utils;
@@ -59,8 +61,8 @@ public class SettingsActivity extends SettingsCommonActivity {
     public static final String KEY_FOLDER_ANIMATIONS = "folderAnimations";
     public static final String KEY_RECENT_MEDIA = "recentMedia";
 
-    private Resources res;
-    private int actionBarColor;
+	private Resources res;
+	private int actionBarColor;
     private final Handler handler = new Handler();
     private Drawable oldBackground;
     private boolean mRecreate = false;
@@ -79,7 +81,7 @@ public class SettingsActivity extends SettingsCommonActivity {
         return PreferenceManager.getDefaultSharedPreferences(context)
                 .getBoolean(KEY_FOLDER_SIZE, false);
     }
-
+    
     public static boolean getDisplayFileThumbnail(Context context) {
         return PreferenceManager.getDefaultSharedPreferences(context)
                 .getBoolean(KEY_FILE_THUMBNAIL, true);
@@ -99,9 +101,9 @@ public class SettingsActivity extends SettingsCommonActivity {
         return PreferenceManager.getDefaultSharedPreferences(context)
                 .getBoolean(KEY_ROOT_MODE, true);
     }
-
+    
     public static int getPrimaryColor(Context context) {
-        int newColor = ContextCompat.getColor(context, R.color.primaryColor);
+    	int newColor = ContextCompat.getColor(context, R.color.primaryColor);
         return PreferenceManager.getDefaultSharedPreferences(context)
                 .getInt(KEY_PRIMARY_COLOR, newColor);
     }
@@ -125,18 +127,18 @@ public class SettingsActivity extends SettingsCommonActivity {
 
     public static String getThemeStyle(Context context) {
         return PreferenceManager.getDefaultSharedPreferences(context)
-                .getString(KEY_THEME_STYLE, "1");
+                .getString(KEY_THEME_STYLE, String.valueOf(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM));
     }
 
     public static String getThemeStyle() {
         return PreferenceManager.getDefaultSharedPreferences(DocumentsApplication.getInstance().getBaseContext())
-                .getString(KEY_THEME_STYLE, "2");
+                .getString(KEY_THEME_STYLE, String.valueOf(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM));
     }
 
     public static void setThemeStyle(int style) {
         PreferenceUtils.set(KEY_THEME_STYLE, String.valueOf(style));
     }
-
+    
     public static boolean getFolderAnimation(Context context) {
         return PreferenceManager.getDefaultSharedPreferences(context)
                 .getBoolean(KEY_FOLDER_ANIMATIONS, true);
@@ -149,7 +151,7 @@ public class SettingsActivity extends SettingsCommonActivity {
     public static void setSecurityEnabled(Context context, boolean enable) {
         PreferenceUtils.set(KEY_SECURITY_ENABLED, enable);
     }
-
+    
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -167,7 +169,7 @@ public class SettingsActivity extends SettingsCommonActivity {
 
     @Override
     protected void onResume() {
-        super.onResume();
+    	super.onResume();
         changeActionBarColor(0);
     }
 
@@ -213,21 +215,21 @@ public class SettingsActivity extends SettingsCommonActivity {
 
     public void changeActionBarColor(int newColor) {
 
-        int color = newColor != 0 ? newColor : SettingsActivity.getPrimaryColor(this);
-        Drawable colorDrawable = new ColorDrawable(color);
+		int color = newColor != 0 ? newColor : SettingsActivity.getPrimaryColor(this);
+		Drawable colorDrawable = new ColorDrawable(color);
 
-        if (oldBackground == null) {
+		if (oldBackground == null) {
             getSupportActionBar().setBackgroundDrawable(colorDrawable);
 
         } else {
-            TransitionDrawable td = new TransitionDrawable(new Drawable[] { oldBackground, colorDrawable });
+			TransitionDrawable td = new TransitionDrawable(new Drawable[] { oldBackground, colorDrawable });
             getSupportActionBar().setBackgroundDrawable(td);
-            td.startTransition(200);
-        }
+			td.startTransition(200);
+		}
 
-        oldBackground = colorDrawable;
+		oldBackground = colorDrawable;
         setUpStatusBar();
-    }
+	}
 
     public void setUpStatusBar() {
         int color = Utils.getStatusBarColor(SettingsActivity.getPrimaryColor(this));
@@ -241,7 +243,8 @@ public class SettingsActivity extends SettingsCommonActivity {
         }
     }
 
-    public static void logSettingEvent(String key){
+	public static void logSettingEvent(String key){
+        AnalyticsManager.logEvent("settings_"+key.toLowerCase());
     }
 
 }

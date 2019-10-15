@@ -21,9 +21,12 @@ import android.content.Context;
 import android.database.Cursor;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
+import android.os.Bundle;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.text.TextUtils;
+
+import androidx.core.content.ContextCompat;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -31,21 +34,24 @@ import java.io.File;
 import java.io.IOException;
 import java.net.ProtocolException;
 
-import androidx.core.content.ContextCompat;
+import dev.dworks.apps.anexplorer.DocumentsActivity;
 import dev.dworks.apps.anexplorer.R;
 import dev.dworks.apps.anexplorer.libcore.util.Objects;
+import dev.dworks.apps.anexplorer.misc.AnalyticsManager;
 import dev.dworks.apps.anexplorer.misc.IconUtils;
 import dev.dworks.apps.anexplorer.model.DocumentsContract.Root;
 import dev.dworks.apps.anexplorer.provider.AppsProvider;
 import dev.dworks.apps.anexplorer.provider.CloudStorageProvider;
 import dev.dworks.apps.anexplorer.provider.DownloadStorageProvider;
 import dev.dworks.apps.anexplorer.provider.ExternalStorageProvider;
+import dev.dworks.apps.anexplorer.provider.ExtraDocumentsProvider;
 import dev.dworks.apps.anexplorer.provider.MediaDocumentsProvider;
 import dev.dworks.apps.anexplorer.provider.NetworkStorageProvider;
 import dev.dworks.apps.anexplorer.provider.NonMediaDocumentsProvider;
 import dev.dworks.apps.anexplorer.provider.RecentsProvider;
 import dev.dworks.apps.anexplorer.provider.RootedStorageProvider;
 import dev.dworks.apps.anexplorer.provider.UsbStorageProvider;
+import dev.dworks.apps.anexplorer.transfer.TransferHelper;
 
 import static dev.dworks.apps.anexplorer.model.DocumentInfo.getCursorInt;
 import static dev.dworks.apps.anexplorer.model.DocumentInfo.getCursorLong;
@@ -186,7 +192,7 @@ public class RootInfo implements Durable, Parcelable {
 
     public void deriveFields() {
         derivedMimeTypes = (mimeTypes != null) ? mimeTypes.split("\n") : null;
-        derivedColor = R.color.item_doc_doc;
+        derivedColor = R.color.primaryColor;
         derivedTag = title;
 
         // TODO: remove these special case icons
@@ -200,7 +206,7 @@ public class RootInfo implements Durable, Parcelable {
             derivedIcon = R.drawable.ic_root_root;
             derivedTag = "root";
         } else if (isPhoneStorage()) {
-            derivedIcon = R.drawable.ic_root_phone;
+            derivedIcon = R.drawable.ic_root_device;
             derivedTag = "phone";
         } else if (isSecondaryStorage()) {
             derivedIcon = R.drawable.ic_root_sdcard;
@@ -297,6 +303,31 @@ public class RootInfo implements Durable, Parcelable {
             }
             derivedColor = R.color.item_connection_cloud;
             derivedTag = "cloud";
+        } else if (isExtraStorage()) {
+            if (isWhatsApp()) {
+                derivedIcon = R.drawable.ic_root_whatsapp;
+                derivedColor = R.color.item_whatsapp;
+                derivedTag = "whatsapp";
+            } else if (isTelegram()) {
+                derivedIcon = R.drawable.ic_root_telegram;
+                derivedColor = R.color.item_telegram;
+                derivedTag = "telegram";
+            } else if (isTelegramX()) {
+                derivedIcon = R.drawable.ic_root_telegram;
+                derivedColor = R.color.item_telegramx;
+                derivedTag = "telegramx";
+            }
+        } else if (isTransfer()) {
+            derivedIcon = R.drawable.ic_root_transfer;
+            derivedColor = R.color.item_transfer;
+            derivedTag = "transfer";
+        }  else if (isCast()) {
+            derivedIcon = R.drawable.ic_root_cast;
+            derivedColor = R.color.item_cast;
+            derivedTag = "cast";
+        }  else if (isReceiveFolder()) {
+            derivedIcon = R.drawable.ic_stat_download;
+            derivedTag = "receivefiles";
         }
     }
 
@@ -313,6 +344,14 @@ public class RootInfo implements Durable, Parcelable {
 
     public boolean isConnections() {
         return authority == null && "connections".equals(rootId);
+    }
+
+    public boolean isTransfer() {
+        return TransferHelper.AUTHORITY.equals(authority)  && "transfer".equals(rootId);
+    }
+
+    public boolean isCast() {
+        return authority == null && "cast".equals(rootId);
     }
 
     public boolean isRecents() {
@@ -339,7 +378,7 @@ public class RootInfo implements Durable, Parcelable {
 
     public boolean isPhoneStorage() {
         return ExternalStorageProvider.AUTHORITY.equals(authority)
-                && ExternalStorageProvider.ROOT_ID_PHONE.equals(rootId);
+                && ExternalStorageProvider.ROOT_ID_DEVICE.equals(rootId);
     }
     
     public boolean isSecondaryStorage() {
@@ -367,6 +406,11 @@ public class RootInfo implements Durable, Parcelable {
     public boolean isAppBackupFolder() {
         return ExternalStorageProvider.AUTHORITY.equals(authority)
                 && ExternalStorageProvider.ROOT_ID_APP_BACKUP.equals(rootId);
+    }
+
+    public boolean isReceiveFolder() {
+        return ExternalStorageProvider.AUTHORITY.equals(authority)
+                && ExternalStorageProvider.ROOT_ID_RECIEVE_FLES.equals(rootId);
     }
 
     public boolean isBluetoothFolder() {
@@ -406,6 +450,25 @@ public class RootInfo implements Durable, Parcelable {
     public boolean isDocument() {
         return NonMediaDocumentsProvider.AUTHORITY.equals(authority)
                 && NonMediaDocumentsProvider.TYPE_DOCUMENT_ROOT.equals(rootId);
+    }
+
+    public boolean isExtraStorage() {
+        return ExtraDocumentsProvider.AUTHORITY.equals(authority);
+    }
+
+    public boolean isWhatsApp() {
+        return ExtraDocumentsProvider.AUTHORITY.equals(authority)
+                && ExtraDocumentsProvider.ROOT_ID_WHATSAPP.equals(rootId);
+    }
+
+    public boolean isTelegram() {
+        return ExtraDocumentsProvider.AUTHORITY.equals(authority)
+                && ExtraDocumentsProvider.ROOT_ID_TELEGRAM.equals(rootId);
+    }
+
+    public boolean isTelegramX() {
+        return ExtraDocumentsProvider.AUTHORITY.equals(authority)
+                && ExtraDocumentsProvider.ROOT_ID_TELEGRAMX.equals(rootId);
     }
 
     public boolean isArchive() {
@@ -632,6 +695,11 @@ public class RootInfo implements Durable, Parcelable {
                 + "}";
     }
 
+    public static void openRoot(DocumentsActivity activity, RootInfo rootInfo, RootInfo parentRootInfo){
+        activity.onRootPicked(rootInfo, parentRootInfo);
+        AnalyticsManager.logEvent("open_shortcuts", rootInfo ,new Bundle());
+    }
+
     public static boolean isStorage(RootInfo root){
         return root.isHome() || root.isPhoneStorage() || root.isStorage() || root.isUsbStorage();
     }
@@ -642,6 +710,10 @@ public class RootInfo implements Durable, Parcelable {
 
     public static boolean isLibraryNonMedia(RootInfo root){
         return root.isDocument() || root.isArchive() || root.isApk();
+    }
+
+    public static boolean isLibraryExtra(RootInfo root){
+        return root.isWhatsApp() || root.isTelegram() || root.isTelegramX();
     }
 
     public static boolean isFolder(RootInfo root){
@@ -670,7 +742,8 @@ public class RootInfo implements Durable, Parcelable {
     }
 
     public static boolean isOtherRoot(RootInfo root){
-        return null != root && (root.isHome() || root.isConnections() || root.isNetworkStorage());
+        return null != root && (root.isHome() || root.isConnections() || root.isTransfer()
+                || root.isNetworkStorage() || root.isCast());
     }
 
     public static boolean isMedia(RootInfo root){
@@ -682,7 +755,7 @@ public class RootInfo implements Durable, Parcelable {
     }
 
     public static boolean isChromecastFeature(RootInfo root){
-        return RootInfo.isMedia(root) || root.isHome() || root.isStorage();
+        return RootInfo.isMedia(root) || root.isHome() || root.isStorage() || root.isCast();
     }
 
 }

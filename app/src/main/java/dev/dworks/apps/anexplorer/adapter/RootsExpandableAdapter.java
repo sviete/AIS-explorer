@@ -17,6 +17,8 @@ import dev.dworks.apps.anexplorer.fragment.RootsFragment.RootItem;
 import dev.dworks.apps.anexplorer.model.GroupInfo;
 import dev.dworks.apps.anexplorer.model.RootInfo;
 
+import static dev.dworks.apps.anexplorer.DocumentsApplication.isSpecialDevice;
+
 public class RootsExpandableAdapter extends BaseExpandableListAdapter {
 
     final List<GroupInfo> group = new ArrayList<>();
@@ -31,6 +33,8 @@ public class RootsExpandableAdapter extends BaseExpandableListAdapter {
         final List<Item> phone = new ArrayList<>();
         final List<Item> recent = new ArrayList<>();
         final List<Item> connection = new ArrayList<>();
+        final List<Item> transfer = new ArrayList<>();
+        final List<Item> receive = new ArrayList<>();
         final List<Item> rooted = new ArrayList<>();
         final List<Item> appbackup = new ArrayList<>();
         final List<Item> usb = new ArrayList<>();
@@ -44,6 +48,8 @@ public class RootsExpandableAdapter extends BaseExpandableListAdapter {
         final List<Item> libraryNonMedia = new ArrayList<>();
         final List<Item> folders = new ArrayList<>();
         final List<Item> bookmarks = new ArrayList<>();
+        final List<Item> messengers = new ArrayList<>();
+        final List<Item> cast = new ArrayList<>();
 
         for (RootInfo root : roots) {
             if (root.isHome()) {
@@ -54,6 +60,12 @@ public class RootsExpandableAdapter extends BaseExpandableListAdapter {
                 }
             } else if (root.isConnections()) {
                 connection.add(new RootItem(root));
+            } else if (root.isTransfer()) {
+                transfer.add(new RootItem(root));
+            } else if (root.isReceiveFolder()) {
+                receive.add(new RootItem(root));
+            } else if (root.isCast()) {
+                cast.add(new RootItem(root));
             } else if (root.isRootedStorage()) {
                 rooted.add(new RootItem(root));
             } else if (root.isPhoneStorage()) {
@@ -81,7 +93,9 @@ public class RootsExpandableAdapter extends BaseExpandableListAdapter {
             } else if (RootInfo.isNetwork(root)) {
                 network.add(new RootItem(root));
             } else if (RootInfo.isCloud(root)) {
-                network.add(new RootItem(root));
+                cloud.add(new RootItem(root));
+            } else if (RootInfo.isLibraryExtra(root)) {
+                messengers.add(new RootItem(root));
             }
         }
 
@@ -94,12 +108,21 @@ public class RootsExpandableAdapter extends BaseExpandableListAdapter {
             groupRoots.add(new GroupInfo("Storage", home));
         }
 
-        if(!network.isEmpty()){
-            network.addAll(connection);
-            groupRoots.add(new GroupInfo("Network & Cloud", network));
-        } else if(!connection.isEmpty()){
-            groupRoots.add(new GroupInfo("Network & Cloud", connection));
+        if(!messengers.isEmpty()){
+            groupRoots.add(new GroupInfo("Apps Media", messengers));
         }
+
+        if(!transfer.isEmpty()){
+            transfer.addAll(receive);
+            groupRoots.add(new GroupInfo("Transfer", transfer));
+        }
+
+        if (!isSpecialDevice()) {
+            network.addAll(cast);
+        }
+        network.addAll(connection);
+        network.addAll(cloud);
+        groupRoots.add(new GroupInfo("Network & Cloud", network));
 
         if(!apps.isEmpty()){
             if(!appbackup.isEmpty()) {

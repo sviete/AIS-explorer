@@ -41,6 +41,7 @@ public class PurchaseActivity extends ActionBarActivity {
         setUpDefaultStatusBar();
 
         initControls();
+        DocumentsApplication.getInstance().initializeBilling();
     }
 
     private void initControls() {
@@ -50,7 +51,7 @@ public class PurchaseActivity extends ActionBarActivity {
         restoreButton.setEnabled(true);
         purchaseButton.setEnabled(true);
 
-        if(Utils.isTelevision(this)){
+        if(!AppPaymentFlavour.isBillingSupported()){
             restoreButton.setVisibility(View.GONE);
         }
 
@@ -66,7 +67,7 @@ public class PurchaseActivity extends ActionBarActivity {
         purchaseButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if(Utils.isTelevision(PurchaseActivity.this)){
+                if(!AppPaymentFlavour.isBillingSupported()){
                     Intent intentMarketAll = new Intent("android.intent.action.VIEW");
                     intentMarketAll.setData(Utils.getAppProStoreUri());
                     if(Utils.isIntentAvailable(PurchaseActivity.this, intentMarketAll)) {
@@ -75,6 +76,7 @@ public class PurchaseActivity extends ActionBarActivity {
                 } else {
                     if(DocumentsApplication.isPurchased()){
                         Utils.showSnackBar(PurchaseActivity.this, getString(R.string.thank_you));
+                        finish();
                     } else {
                         DocumentsApplication.getInstance().purchase(PurchaseActivity.this, DocumentsApplication.getPurchaseId());
                     }
@@ -94,6 +96,7 @@ public class PurchaseActivity extends ActionBarActivity {
             @Override
             protected Boolean doWork() {
                 DocumentsApplication.getInstance().loadOwnedPurchasesFromGoogle();
+                DocumentsApplication.getInstance().onPurchaseHistoryRestored();
                 return true;
             }
 
@@ -107,6 +110,7 @@ public class PurchaseActivity extends ActionBarActivity {
     public void onPurchaseRestored(){
         if (DocumentsApplication.isPurchased()) {
             Utils.showSnackBar(this, getString(R.string.restored_previous_purchase_please_restart));
+            finish();
         } else {
             Utils.showSnackBar(this, getString(R.string.could_not_restore_purchase));
         }
@@ -114,11 +118,14 @@ public class PurchaseActivity extends ActionBarActivity {
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
+        if (!DocumentsApplication.getInstance().handleActivityResult(requestCode, resultCode, data)) {
+            super.onActivityResult(requestCode, resultCode, data);
+        }
     }
 
     @Override
     public void onDestroy() {
+        DocumentsApplication.getInstance().releaseBillingProcessor();
         super.onDestroy();
     }
 

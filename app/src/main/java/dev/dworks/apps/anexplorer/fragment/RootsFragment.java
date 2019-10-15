@@ -30,7 +30,6 @@ import android.os.Parcelable;
 import android.provider.Settings;
 import android.text.TextUtils;
 import android.util.DisplayMetrics;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -60,6 +59,8 @@ import dev.dworks.apps.anexplorer.common.BaseFragment;
 import dev.dworks.apps.anexplorer.common.DialogBuilder;
 import dev.dworks.apps.anexplorer.libcore.util.Objects;
 import dev.dworks.apps.anexplorer.loader.RootsLoader;
+import dev.dworks.apps.anexplorer.misc.AnalyticsManager;
+import dev.dworks.apps.anexplorer.misc.CrashReportingManager;
 import dev.dworks.apps.anexplorer.misc.RootsCache;
 import dev.dworks.apps.anexplorer.misc.Utils;
 import dev.dworks.apps.anexplorer.model.DocumentInfo;
@@ -250,7 +251,7 @@ public class RootsFragment extends BaseFragment {
                             //mList.setSelection(index);
                             mList.setItemChecked(index, true);
                         } catch (Exception e){
-                            Log.e("EXP", e.toString());
+                            CrashReportingManager.logException(e);
                         }
 
                         return;
@@ -286,6 +287,7 @@ public class RootsFragment extends BaseFragment {
                 activity.onRootPicked(rootInfo, true);
                 Bundle params = new Bundle();
                 params.putString("type", rootInfo.title);
+                AnalyticsManager.logEvent("navigate", rootInfo, params);
             } else if (item instanceof AppItem) {
                 activity.onAppPicked(((AppItem) item).info);
             } else {

@@ -24,6 +24,7 @@ import dev.dworks.apps.anexplorer.R;
 import dev.dworks.apps.anexplorer.adapter.RootsCommonAdapter;
 import dev.dworks.apps.anexplorer.libcore.util.Objects;
 import dev.dworks.apps.anexplorer.loader.RootsLoader;
+import dev.dworks.apps.anexplorer.misc.AnalyticsManager;
 import dev.dworks.apps.anexplorer.misc.RootsCache;
 import dev.dworks.apps.anexplorer.model.RootInfo;
 import dev.dworks.apps.anexplorer.setting.SettingsActivity;

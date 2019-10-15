@@ -40,8 +40,8 @@
         android:name=".DocumentsApplication"
         android:allowBackup="true"
         android:banner="@drawable/banner"
-        android:icon="@mipmap/ic_launcher"
-        android:roundIcon="@mipmap/ic_launcher"
+        android:icon="@drawable/ic_launcher"
+        android:roundIcon="@drawable/ic_launcher"
         android:label="@string/name"
         tools:replace="android:label"
         android:usesCleartextTraffic="true"
@@ -60,8 +60,7 @@
         <activity
             android:name=".DocumentsActivity"
             android:theme="@style/DocumentsTheme.Splash"
-            android:launchMode="singleTask"
-            android:exported="true">
+            android:launchMode="singleTask">
             <intent-filter>
                 <action android:name="android.intent.action.OPEN_DOCUMENT" />
 
@@ -148,7 +147,7 @@
         </activity>
         <activity
             android:name=".AboutActivity"
-            android:label="@string/menu_about"
+            android:label="About"
             android:theme="@style/DocumentsTheme.Document" >
             <meta-data android:name="WindowManagerPreference:SuppressWindowControlNavigationButton"
                 android:value="true" />
@@ -200,6 +199,8 @@
                 <action android:name="${applicationId}.action.STOP_FTPSERVER" />
                 <action android:name="${applicationId}.action.FTPSERVER_STARTED" />
                 <action android:name="${applicationId}.action.FTPSERVER_STOPPED" />
+                <action android:name="${applicationId}.action.START_LISTENING" />
+                <action android:name="${applicationId}.action.STOP_LISTENING" />
             </intent-filter>
         </receiver>
 
@@ -208,9 +209,19 @@
             android:enabled="true"
             android:exported="false" />
         <service
-            android:name=".service.ServerService"
+            android:name=".service.ServerTileService"
             android:icon="@drawable/ic_root_server"
             android:label="@string/toggle_messages"
+            android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
+            <intent-filter>
+                <action android:name="android.service.quicksettings.action.QS_TILE" />
+            </intent-filter>
+        </service>
+
+        <service
+            android:name=".service.TransferTileService"
+            android:icon="@drawable/ic_root_transfer"
+            android:label="@string/transfer_toggle_messages"
             android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
             <intent-filter>
                 <action android:name="android.service.quicksettings.action.QS_TILE" />
@@ -346,6 +357,16 @@
             </intent-filter>
         </provider>
 
+        <provider
+            android:name="dev.dworks.apps.anexplorer.provider.ExtraDocumentsProvider"
+            android:authorities="${applicationId}.extra.documents"
+            android:exported="true"
+            android:grantUriPermissions="true"
+            android:permission="android.permission.MANAGE_DOCUMENT">
+            <intent-filter>
+                <action android:name="dev.dworks.apps.anexplorer.action.DOCUMENTS_PROVIDER" />
+            </intent-filter>
+        </provider>
         <activity
             android:name=".common.WebviewActivity"
             android:theme="@style/DocumentsTheme.Document"
@@ -370,9 +391,23 @@
             android:theme="@style/DocumentsTheme.Cast" />
 
         <activity
-            android:name=".queue.QueueActivity"
-            android:label="@string/queue_list"
-            android:theme="@style/DocumentsTheme.Document" />
+            android:name=".ShareDeviceActivity"
+            android:label="@string/activity_share"
+            android:theme="@style/DocumentsTheme.Note">
+            <intent-filter>
+                <action android:name="android.intent.action.SEND"/>
+                <action android:name="android.intent.action.SEND_MULTIPLE"/>
+
+                <category android:name="android.intent.category.DEFAULT"/>
+
+                <data android:mimeType="*/*"/>
+            </intent-filter>
+        </activity>
+
+        <service
+            android:name=".service.TransferService"
+            android:enabled="true"
+            android:exported="false"/>
 
     </application>
 

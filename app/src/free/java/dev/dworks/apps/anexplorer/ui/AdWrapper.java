@@ -7,8 +7,14 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.FrameLayout;
 
+import com.google.android.gms.ads.AdListener;
+import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.AdView;
+import com.google.android.gms.ads.InterstitialAd;
 
+import dev.dworks.apps.anexplorer.AppPaymentFlavour;
 import dev.dworks.apps.anexplorer.R;
+import dev.dworks.apps.anexplorer.misc.CrashReportingManager;
 
 import static dev.dworks.apps.anexplorer.DocumentsApplication.isTelevision;
 
@@ -18,38 +24,63 @@ import static dev.dworks.apps.anexplorer.DocumentsApplication.isTelevision;
  */
 public class AdWrapper extends FrameLayout {
 
+    private AdView mAdView;
+    private InterstitialAd mInterstitialAd;
     private boolean showInterstiatial = true;
 
     public AdWrapper(Context context) {
         super(context);
+        init(context);
     }
 
     public AdWrapper(Context context, AttributeSet attrs) {
         super(context, attrs);
+        init(context);
     }
 
     public AdWrapper(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
+        init(context);
     }
 
     private void init(Context context) {
         //Ads
+        if(!isTelevision()){
+            LayoutInflater.from(context).inflate(R.layout.ads_wrapper, this, true);
+            initAd();
+            mInterstitialAd = new InterstitialAd(context);
+            initInterstitialAd();
+        }
     }
 
     public void initInterstitialAd(){
+        mInterstitialAd.setAdUnitId("ca-app-pub-6407484780907805/9134520474");
         requestNewInterstitial();
     }
 
     public void initAd(){
-
+        mAdView = (AdView) findViewById(R.id.adView);
+        mAdView.setAdListener(adListener);
     }
 
     private void requestNewInterstitial() {
-
+        if(AppPaymentFlavour.isPurchased()){
+            return;
+        }
+        if(null != mInterstitialAd){
+            mInterstitialAd.loadAd(new AdRequest.Builder().build());
+        }
     }
 
     private void showInterstitial() {
-
+        if(AppPaymentFlavour.isPurchased()){
+            return;
+        }
+        if(showInterstiatial && null != mInterstitialAd){
+            if(mInterstitialAd.isLoaded()) {
+                mInterstitialAd.show();
+            }
+        }
     }
 
     @Override
@@ -73,4 +104,18 @@ public class AdWrapper extends FrameLayout {
     private void showAd(){
         return;
     }
+
+    AdListener adListener = new AdListener() {
+        @Override
+        public void onAdLoaded() {
+            super.onAdLoaded();
+            mAdView.setVisibility(View.VISIBLE);
+        }
+
+        @Override
+        public void onAdFailedToLoad(int errorCode) {
+            super.onAdFailedToLoad(errorCode);
+            mAdView.setVisibility(View.GONE);
+        }
+    };
 }

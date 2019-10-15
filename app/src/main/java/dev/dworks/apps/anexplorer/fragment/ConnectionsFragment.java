@@ -16,6 +16,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.PopupMenu;
 
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 import androidx.loader.app.LoaderManager;
@@ -30,6 +31,7 @@ import dev.dworks.apps.anexplorer.cloud.CloudConnection;
 import dev.dworks.apps.anexplorer.common.DialogBuilder;
 import dev.dworks.apps.anexplorer.common.RecyclerFragment;
 import dev.dworks.apps.anexplorer.directory.DividerItemDecoration;
+import dev.dworks.apps.anexplorer.misc.AnalyticsManager;
 import dev.dworks.apps.anexplorer.misc.ProviderExecutor;
 import dev.dworks.apps.anexplorer.misc.RootsCache;
 import dev.dworks.apps.anexplorer.misc.Utils;
@@ -45,6 +47,8 @@ import dev.dworks.apps.anexplorer.ui.fabs.FabSpeedDial;
 import static android.widget.LinearLayout.VERTICAL;
 import static dev.dworks.apps.anexplorer.DocumentsApplication.isSpecialDevice;
 import static dev.dworks.apps.anexplorer.DocumentsApplication.isWatch;
+import static dev.dworks.apps.anexplorer.misc.ConnectionUtils.addConnection;
+import static dev.dworks.apps.anexplorer.misc.ConnectionUtils.editConnection;
 import static dev.dworks.apps.anexplorer.model.DocumentInfo.getCursorInt;
 import static dev.dworks.apps.anexplorer.network.NetworkConnection.SERVER;
 import static dev.dworks.apps.anexplorer.provider.CloudStorageProvider.TYPE_BOX;
@@ -215,7 +219,7 @@ public class ConnectionsFragment extends RecyclerFragment
     public void onClick(final View view) {
         switch (view.getId()){
             case R.id.fab:
-                addConnection();
+                addConnection(getAppCompatActivity());
                 break;
         }
     }
@@ -241,7 +245,7 @@ public class ConnectionsFragment extends RecyclerFragment
         switch (id) {
             case R.id.menu_edit:
                 if(!networkConnection.type.startsWith(TYPE_CLOUD)) {
-                    editConnection(connection_id);
+                    editConnection(getAppCompatActivity(), connection_id);
                 } else {
                     Utils.showSnackBar(getActivity(), "Cloud storage connection can't be edited");
                 }
@@ -258,14 +262,6 @@ public class ConnectionsFragment extends RecyclerFragment
         }
     }
 
-    private void addConnection() {
-        CreateConnectionFragment.show(getAppCompatActivity().getSupportFragmentManager());
-    }
-
-    private void editConnection(int connection_id) {
-        CreateConnectionFragment.show(getAppCompatActivity().getSupportFragmentManager(), connection_id);
-    }
-
     private void deleteConnection(final int connection_id) {
         DialogBuilder builder = new DialogBuilder(getActivity());
         builder.setMessage("Delete connection?")
@@ -279,6 +275,7 @@ public class ConnectionsFragment extends RecyclerFragment
                     }
                     }).setNegativeButton(android.R.string.cancel,  null);
         builder.showDialog();
+        AnalyticsManager.logEvent("connection_delete");
     }
 
     public void openConnectionRoot(Cursor cursor) {
@@ -322,6 +319,7 @@ public class ConnectionsFragment extends RecyclerFragment
         CloudConnection cloudStorage = CloudConnection.createCloudConnections(getActivity(), cloudType);
         new CloudConnection.CreateConnectionTask(activity, cloudStorage).executeOnExecutor(
                 ProviderExecutor.forAuthority(CloudStorageProvider.AUTHORITY+cloudType));
+        AnalyticsManager.logEvent("add_cloud");
     }
 
     public void menuItemAction(MenuItem menuItem) {
@@ -348,7 +346,8 @@ public class ConnectionsFragment extends RecyclerFragment
                 break;
 
             case R.id.network_ftp:
-                addConnection();
+                addConnection(getAppCompatActivity());
+                AnalyticsManager.logEvent("add_ftp");
                 break;
         }
     }

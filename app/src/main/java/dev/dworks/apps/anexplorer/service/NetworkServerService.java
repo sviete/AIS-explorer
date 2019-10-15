@@ -9,6 +9,7 @@ import android.os.Looper;
 import android.os.Message;
 import android.os.Process;
 
+import dev.dworks.apps.anexplorer.misc.CrashReportingManager;
 import dev.dworks.apps.anexplorer.model.RootInfo;
 import dev.dworks.apps.anexplorer.network.NetworkConnection;
 import dev.dworks.apps.anexplorer.network.NetworkServiceHandler;
@@ -38,6 +39,7 @@ public abstract class NetworkServerService extends Service {
     public abstract void stopServer();
 
     protected void handleServerStartError(Exception e) {
+        CrashReportingManager.logException(e);
         sendBroadcast(new Intent(ACTION_FTPSERVER_FAILEDTOSTART));
     }
 

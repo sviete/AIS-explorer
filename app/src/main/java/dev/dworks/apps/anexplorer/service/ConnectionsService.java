@@ -1,7 +1,6 @@
 package dev.dworks.apps.anexplorer.service;
 
 import android.os.Looper;
-import android.util.Log;
 
 import org.apache.ftpserver.ConnectionConfigFactory;
 import org.apache.ftpserver.FtpServer;
@@ -18,6 +17,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import dev.dworks.apps.anexplorer.misc.ConnectionUtils;
+import dev.dworks.apps.anexplorer.misc.CrashReportingManager;
 import dev.dworks.apps.anexplorer.network.NetworkServiceHandler;
 
 
@@ -63,7 +63,7 @@ public class ConnectionsService extends NetworkServerService {
         try {
             serverFactory.getUserManager().save(user);
         } catch (FtpException e) {
-            Log.e("EXP", e.toString());
+            CrashReportingManager.logException(e);
         }
 
         // do start server

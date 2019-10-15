@@ -3,14 +3,14 @@
 
     <color name="primaryColor">#d65602</color>
     <color name="primaryDarkColor">#d65602</color>
-    <color name="accentColor">#f11206</color>
+    <color name="accentColor">#FF1744</color>
 
     <color name="item_root_pressed">#33cccccc</color>
     <color name="item_root_focused">#66cccccc</color>
     <color name="statusBarColor">#28000000</color>
     <color name="alertColor">#323232</color>
     <color name="alertDarkColor">#ff242424</color>
-
+    <color name="splashColor">@color/primaryColor</color>
     <!-- color prefernce -->
     <string-array name="default_color_choice_values" translatable="false">
         <item>#0288D1</item>
@@ -88,6 +88,13 @@
     <color name="item_connection_onedrive">#FFFF7537</color>
     <color name="item_connection_box">#03A9F4</color>
     <color name="item_connection_cloud">#455A64</color>
+
+    <color name="item_whatsapp">#075e54</color>
+    <color name="item_telegram">#0088cc</color>
+    <color name="item_telegramx">#6c8099</color>
+
+    <color name="item_transfer">#03A9F4</color>
+    <color name="item_cast">#FFFF7537</color>
 
     <color name="material_black_protected">#88000000</color>
 </resources>

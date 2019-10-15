@@ -54,8 +54,10 @@ import dev.dworks.apps.anexplorer.BaseActivity;
 import dev.dworks.apps.anexplorer.BaseActivity.State;
 import dev.dworks.apps.anexplorer.DocumentsApplication;
 import dev.dworks.apps.anexplorer.R;
+import dev.dworks.apps.anexplorer.common.ListFragment;
 import dev.dworks.apps.anexplorer.libcore.io.IoUtils;
 import dev.dworks.apps.anexplorer.loader.UriDerivativeLoader;
+import dev.dworks.apps.anexplorer.misc.CrashReportingManager;
 import dev.dworks.apps.anexplorer.misc.RootsCache;
 import dev.dworks.apps.anexplorer.model.DocumentStack;
 import dev.dworks.apps.anexplorer.model.DurableUtils;
@@ -186,7 +188,7 @@ public class RecentsCreateFragment extends ListFragment {
                         result.add(stack);
                     } catch (IOException e) {
                         Log.w(TAG, "Failed to resolve stack: " + e);
-                        Log.e("EXP", e.toString());
+                        CrashReportingManager.logException(e);
                     }
                 }
             } finally {

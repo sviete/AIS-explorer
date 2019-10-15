@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical">
@@ -10,7 +9,7 @@
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
         android:layout_height="250dp"
-        android:background="@color/primaryColor"
+        android:background="?attr/colorPrimary"
         android:elevation="8dp"
         app:contentInsetLeft="@dimen/second_keyline_default"
         app:contentInsetStart="@dimen/second_keyline_default"
@@ -68,7 +67,7 @@
                     android:gravity="start|center_vertical"
                     android:minHeight="?attr/actionBarSize"
                     android:padding="16dp"
-                    android:text="@string/rate_us_on_play_store"
+                    android:text="Rate us on Play store"
                     android:textAlignment="viewStart"
                     android:textAppearance="@style/TextAppearance.AppCompat.Subhead"
                     android:textColor="?android:attr/textColorPrimary"
@@ -87,7 +86,7 @@
                     android:gravity="start|center_vertical"
                     android:minHeight="?attr/actionBarSize"
                     android:padding="16dp"
-                    android:text="@string/source_code"
+                    android:text="Show us more love"
                     android:textAlignment="viewStart"
                     android:textAppearance="@style/TextAppearance.AppCompat.Subhead"
                     android:textColor="?android:attr/textColorPrimary"
@@ -125,7 +124,7 @@
                     android:gravity="start|center_vertical"
                     android:minHeight="?attr/actionBarSize"
                     android:padding="16dp"
-                    android:text="@string/spread_the_word"
+                    android:text="Spread the word"
                     android:textAlignment="viewStart"
                     android:textAppearance="@style/TextAppearance.AppCompat.Subhead"
                     android:textColor="?android:attr/textColorPrimary"
@@ -144,7 +143,7 @@
                     android:gravity="start|center_vertical"
                     android:minHeight="?attr/actionBarSize"
                     android:padding="16dp"
-                    android:text="@string/feed_us_back"
+                    android:text="Feed us back"
                     android:textAlignment="viewStart"
                     android:textAppearance="@style/TextAppearance.AppCompat.Subhead"
                     android:textColor="?android:attr/textColorPrimary"
@@ -154,12 +153,11 @@
             </androidx.appcompat.widget.LinearLayoutCompat>
 
             <ImageView
-                android:layout_marginTop="25dp"
                 android:layout_width="150dp"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:contentDescription="@string/made_with_love"
-                app:srcCompat="@drawable/ic_logo_plain" />
+                android:src="@drawable/made_with_love" />
 
         </LinearLayout>
     </ScrollView>

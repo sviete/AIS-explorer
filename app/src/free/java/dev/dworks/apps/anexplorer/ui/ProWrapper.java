@@ -6,6 +6,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.FrameLayout;
 
+import dev.dworks.apps.anexplorer.AppPaymentFlavour;
 import dev.dworks.apps.anexplorer.DocumentsApplication;
 import dev.dworks.apps.anexplorer.R;
 

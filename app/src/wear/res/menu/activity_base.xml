@@ -10,12 +10,12 @@
         android:id="@+id/menu_about"
         android:icon="@drawable/ic_dialog_info"
         support:showAsAction="never"
-        android:title="@string/menu_about"/>
+        android:title="About"/>
 
     <item
         android:id="@+id/menu_exit"
         support:showAsAction="never"
         android:icon="@drawable/ic_menu_exit"
-        android:title="@string/menu_exit"/>
+        android:title="Exit"/>
 
 </menu>

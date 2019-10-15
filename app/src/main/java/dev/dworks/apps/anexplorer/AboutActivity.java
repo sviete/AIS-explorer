@@ -23,15 +23,16 @@ import android.widget.TextView;
 
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.ShareCompat;
+import dev.dworks.apps.anexplorer.misc.AnalyticsManager;
 import dev.dworks.apps.anexplorer.misc.ColorUtils;
 import dev.dworks.apps.anexplorer.misc.SystemBarTintManager;
 import dev.dworks.apps.anexplorer.misc.Utils;
 import dev.dworks.apps.anexplorer.setting.SettingsActivity;
 
 import static dev.dworks.apps.anexplorer.DocumentsActivity.getStatusBarHeight;
+import static dev.dworks.apps.anexplorer.DocumentsApplication.isTelevision;
 import static dev.dworks.apps.anexplorer.misc.Utils.getSuffix;
 import static dev.dworks.apps.anexplorer.misc.Utils.openFeedback;
-import static dev.dworks.apps.anexplorer.misc.Utils.openGithub;
 import static dev.dworks.apps.anexplorer.misc.Utils.openPlaystore;
 
 public class AboutActivity extends AboutVariantFlavour implements View.OnClickListener {
@@ -62,6 +63,7 @@ public class AboutActivity extends AboutVariantFlavour implements View.OnClickLi
 		} else {
 			view.setBackgroundColor(color);
 		}
+		initAd();
 		initControls();
 	}
 
@@ -75,7 +77,7 @@ public class AboutActivity extends AboutVariantFlavour implements View.OnClickLi
 		int accentColor = ColorUtils.getTextColorForBackground(SettingsActivity.getPrimaryColor());
 		TextView logo = (TextView)findViewById(R.id.logo);
 		logo.setTextColor(accentColor);
-		String header = logo.getText() + getSuffix() + " v3" + (BuildConfig.DEBUG ? " Debug" : "");
+		String header = logo.getText() + getSuffix() + " v" + BuildConfig.VERSION_NAME + (BuildConfig.DEBUG ? " Debug" : "");
 		logo.setText(header);
 
 		TextView action_rate = (TextView)findViewById(R.id.action_rate);
@@ -93,7 +95,7 @@ public class AboutActivity extends AboutVariantFlavour implements View.OnClickLi
 		if(Utils.isOtherBuild()){
 			action_rate.setVisibility(View.GONE);
 			action_support.setVisibility(View.GONE);
-		} else if(DocumentsApplication.isTelevision()){
+		} else if(isTelevision()){
 			action_share.setVisibility(View.GONE);
 			action_feedback.setVisibility(View.GONE);
 		}
@@ -118,23 +120,33 @@ public class AboutActivity extends AboutVariantFlavour implements View.OnClickLi
 				break;
 			case R.id.action_rate:
 				openPlaystore(this);
+				AnalyticsManager.logEvent("app_rate");
 				break;
 			case R.id.action_sponsor:
-				openGithub(this);
+				showAd();
+				AnalyticsManager.logEvent("app_sponsor");
 				break;
 			case R.id.action_support:
-				openGithub(this);
+				if(Utils.isProVersion()){
+					Intent intentMarketAll = new Intent("android.intent.action.VIEW");
+					intentMarketAll.setData(Utils.getAppProStoreUri());
+					startActivity(intentMarketAll);
+				} else {
+					DocumentsApplication.openPurchaseActivity(this);
+				}
+				AnalyticsManager.logEvent("app_love");
 				break;
 			case R.id.action_share:
 
-				String shareText = R.string.share_text
+				String shareText = "I found this file mananger very useful. Give it a try. "
 						+ Utils.getAppShareUri().toString();
 				ShareCompat.IntentBuilder
 						.from(this)
 						.setText(shareText)
 						.setType("text/plain")
-						.setChooserTitle("Share AIS Explorer")
+						.setChooserTitle("Share AnExplorer")
 						.startChooser();
+				AnalyticsManager.logEvent("app_share");
 				break;
 		}
 	}

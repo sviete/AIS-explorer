@@ -3,11 +3,11 @@ package dev.dworks.apps.anexplorer.common;
 import android.app.Dialog;
 import android.content.DialogInterface;
 import android.os.Bundle;
-import android.util.Log;
 import android.widget.Button;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatDialogFragment;
+import dev.dworks.apps.anexplorer.misc.CrashReportingManager;
 import dev.dworks.apps.anexplorer.misc.TintUtils;
 
 /**
@@ -28,7 +28,7 @@ public class DialogFragment extends AppCompatDialogFragment {
                 try{
                     tintButtons(getDialog());
                 } catch (Exception e){
-                    Log.e("EXP", e.toString());
+                    CrashReportingManager.logException(e);
                 }
             }
         });

@@ -2,7 +2,8 @@ package dev.dworks.apps.anexplorer.adapter;
 
 import android.app.Activity;
 import android.database.Cursor;
-import android.util.Log;
+import android.text.TextUtils;
+import android.text.format.Formatter;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -17,6 +18,7 @@ import java.util.TimerTask;
 import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 import dev.dworks.apps.anexplorer.R;
+import dev.dworks.apps.anexplorer.misc.CrashReportingManager;
 import dev.dworks.apps.anexplorer.misc.IconHelper;
 import dev.dworks.apps.anexplorer.misc.IconUtils;
 import dev.dworks.apps.anexplorer.misc.Utils;
@@ -314,7 +316,7 @@ public class HomeAdapter extends RecyclerView.Adapter<HomeAdapter.ViewHolder> {
         }
         catch (Exception e){
             item.setVisibility(View.GONE);
-            Log.e("EXP", e.toString());
+            CrashReportingManager.logException(e);
         }
     }
 }

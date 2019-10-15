@@ -35,7 +35,9 @@ import com.cloudrail.si.CloudRail;
 import androidx.appcompat.app.AppCompatDelegate;
 import androidx.collection.ArrayMap;
 import dev.dworks.apps.anexplorer.cast.Casty;
+import dev.dworks.apps.anexplorer.misc.AnalyticsManager;
 import dev.dworks.apps.anexplorer.misc.ContentProviderClientCompat;
+import dev.dworks.apps.anexplorer.misc.CrashReportingManager;
 import dev.dworks.apps.anexplorer.misc.NotificationUtils;
 import dev.dworks.apps.anexplorer.misc.RootsCache;
 import dev.dworks.apps.anexplorer.misc.SAFManager;
@@ -102,10 +104,14 @@ public class DocumentsApplication extends AppPaymentFlavour {
     public void onCreate() {
         Utils.setAppThemeStyle(getBaseContext());
         super.onCreate();
+        if(!BuildConfig.DEBUG) {
+            AnalyticsManager.intialize(getApplicationContext());
+        }
         sInstance = this;
         final ActivityManager am = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
         final int memoryClassBytes = am.getMemoryClass() * 1024 * 1024;
         CloudRail.setAppKey(BuildConfig.LICENSE_KEY);
+        CrashReportingManager.enable(getApplicationContext(), !BuildConfig.DEBUG);
 
         mRoots = new RootsCache(this);
         mRoots.updateAsync();
@@ -128,6 +134,7 @@ public class DocumentsApplication extends AppPaymentFlavour {
 
         isTelevision = Utils.isTelevision(this);
         isWatch = Utils.isWatch(this);
+        SettingsActivity.setThemeStyle(AppCompatDelegate.MODE_NIGHT_YES);
         if((isTelevision || isWatch) && Integer.valueOf(SettingsActivity.getThemeStyle())
                 != AppCompatDelegate.MODE_NIGHT_YES){
             SettingsActivity.setThemeStyle(AppCompatDelegate.MODE_NIGHT_YES);

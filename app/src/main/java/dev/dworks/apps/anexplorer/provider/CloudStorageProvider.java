@@ -31,6 +31,7 @@ import dev.dworks.apps.anexplorer.cloud.CloudFile;
 import dev.dworks.apps.anexplorer.cursor.MatrixCursor;
 import dev.dworks.apps.anexplorer.cursor.MatrixCursor.RowBuilder;
 import dev.dworks.apps.anexplorer.libcore.io.IoUtils;
+import dev.dworks.apps.anexplorer.misc.CrashReportingManager;
 import dev.dworks.apps.anexplorer.misc.MimePredicate;
 import dev.dworks.apps.anexplorer.misc.MimeTypes;
 import dev.dworks.apps.anexplorer.misc.ParcelFileDescriptorUtil;
@@ -102,6 +103,7 @@ public class CloudStorageProvider extends DocumentsProvider {
             }
         } catch (Exception e) {
             Log.w(TAG, "Failed to load some roots from " + ExplorerProvider.AUTHORITY + ": " + e);
+            CrashReportingManager.logException(e);
         } finally {
             IoUtils.closeQuietly(cursor);
         }
@@ -167,7 +169,7 @@ public class CloudStorageProvider extends DocumentsProvider {
                 includeFile(result, null, new CloudFile(cloudMetaData, connection.clientId));
             }
         } catch (IOException e) {
-            Log.e("EXP", e.toString());
+            CrashReportingManager.logException(e);
         }
         return result;
     }
@@ -192,6 +194,7 @@ public class CloudStorageProvider extends DocumentsProvider {
                 return ParcelFileDescriptorUtil.pipeFrom(new BufferedInputStream(inputStream));
             }
         } catch (Exception e) {
+            CrashReportingManager.logException(e);
             throw new FileNotFoundException("Failed to open document with id " + documentId +
                     " and mode " + mode);
         }
@@ -214,6 +217,7 @@ public class CloudStorageProvider extends DocumentsProvider {
             final ParcelFileDescriptor pfd = ParcelFileDescriptorUtil.pipeFrom(inputStream);
             return new AssetFileDescriptor(pfd, 0, AssetFileDescriptor.UNKNOWN_LENGTH);
         } catch (Exception e) {
+            CrashReportingManager.logException(e);
             throw new FileNotFoundException("Failed to open document with id " + documentId +
                     " and");
         } finally {

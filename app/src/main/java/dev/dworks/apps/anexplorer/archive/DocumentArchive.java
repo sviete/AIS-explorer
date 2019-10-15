@@ -51,6 +51,7 @@ import androidx.annotation.RestrictTo;
 import androidx.exifinterface.media.ExifInterface;
 import dev.dworks.apps.anexplorer.cursor.MatrixCursor;
 import dev.dworks.apps.anexplorer.libcore.io.IoUtils;
+import dev.dworks.apps.anexplorer.misc.CrashReportingManager;
 import dev.dworks.apps.anexplorer.misc.MimePredicate;
 import dev.dworks.apps.anexplorer.misc.ParcelFileDescriptorUtil;
 import dev.dworks.apps.anexplorer.misc.Preconditions;
@@ -228,6 +229,7 @@ public class DocumentArchive implements Closeable {
                 return new DocumentArchive(context, snapshotFile, documentId, idDelimiter,
                         notificationUri);
             } catch (Exception e){
+                CrashReportingManager.logException(e);
                 return null;
             }
         } finally {
@@ -392,6 +394,7 @@ public class DocumentArchive implements Closeable {
                 return ParcelFileDescriptorUtil.pipeFrom(new BufferedInputStream(inputStream));
             }
         } catch (Exception e) {
+            CrashReportingManager.logException(e);
             throw new FileNotFoundException("Failed to open document with id " + documentId +
                     " and mode " + mode);
         }
@@ -450,6 +453,7 @@ public class DocumentArchive implements Closeable {
         } catch (IOException e) {
             // Ignore the exception, as reading the EXIF may legally fail.
             Log.e(TAG, "Failed to obtain thumbnail from EXIF.", e);
+            CrashReportingManager.logException(e);
         } finally {
             IoUtils.closeQuietly(inputStream);
         }

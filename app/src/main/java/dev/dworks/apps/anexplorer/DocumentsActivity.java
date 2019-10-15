@@ -56,6 +56,16 @@ import android.widget.LinearLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
 
+import androidx.appcompat.app.ActionBarDrawerToggle;
+import androidx.appcompat.widget.SearchView;
+import androidx.appcompat.widget.Toolbar;
+import androidx.core.content.ContextCompat;
+import androidx.core.view.ViewCompat;
+import androidx.drawerlayout.widget.DrawerLayout;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.recyclerview.widget.RecyclerView;
+
 import com.cloudrail.si.CloudRail;
 import com.github.javiersantos.appupdater.AppUpdater;
 import com.github.javiersantos.appupdater.enums.Display;
@@ -72,15 +82,6 @@ import java.util.Locale;
 import java.util.Set;
 import java.util.concurrent.Executor;
 
-import androidx.appcompat.app.ActionBarDrawerToggle;
-import androidx.appcompat.widget.SearchView;
-import androidx.appcompat.widget.Toolbar;
-import androidx.core.content.ContextCompat;
-import androidx.core.view.ViewCompat;
-import androidx.drawerlayout.widget.DrawerLayout;
-import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentManager;
-import androidx.recyclerview.widget.RecyclerView;
 import dev.dworks.apps.anexplorer.archive.DocumentArchiveHelper;
 import dev.dworks.apps.anexplorer.cast.CastUtils;
 import dev.dworks.apps.anexplorer.cast.Casty;
@@ -95,11 +96,14 @@ import dev.dworks.apps.anexplorer.fragment.PickFragment;
 import dev.dworks.apps.anexplorer.fragment.RecentsCreateFragment;
 import dev.dworks.apps.anexplorer.fragment.SaveFragment;
 import dev.dworks.apps.anexplorer.fragment.ServerFragment;
+import dev.dworks.apps.anexplorer.fragment.TransferFragment;
 import dev.dworks.apps.anexplorer.libcore.io.IoUtils;
+import dev.dworks.apps.anexplorer.misc.AnalyticsManager;
 import dev.dworks.apps.anexplorer.misc.AppRate;
 import dev.dworks.apps.anexplorer.misc.AsyncTask;
 import dev.dworks.apps.anexplorer.misc.ConnectionUtils;
 import dev.dworks.apps.anexplorer.misc.ContentProviderClientCompat;
+import dev.dworks.apps.anexplorer.misc.CrashReportingManager;
 import dev.dworks.apps.anexplorer.misc.FileUtils;
 import dev.dworks.apps.anexplorer.misc.IntentUtils;
 import dev.dworks.apps.anexplorer.misc.MimePredicate;
@@ -117,17 +121,20 @@ import dev.dworks.apps.anexplorer.model.DocumentsContract.Root;
 import dev.dworks.apps.anexplorer.model.DurableUtils;
 import dev.dworks.apps.anexplorer.model.RootInfo;
 import dev.dworks.apps.anexplorer.network.NetworkConnection;
-import dev.dworks.apps.anexplorer.provider.ExternalStorageProvider;
 import dev.dworks.apps.anexplorer.provider.MediaDocumentsProvider;
 import dev.dworks.apps.anexplorer.provider.RecentsProvider;
 import dev.dworks.apps.anexplorer.provider.RecentsProvider.RecentColumns;
 import dev.dworks.apps.anexplorer.provider.RecentsProvider.ResumeColumns;
+import dev.dworks.apps.anexplorer.fragment.QueueFragment;
 import dev.dworks.apps.anexplorer.setting.SettingsActivity;
+import dev.dworks.apps.anexplorer.transfer.TransferHelper;
 import dev.dworks.apps.anexplorer.ui.DirectoryContainerView;
 import dev.dworks.apps.anexplorer.ui.DrawerLayoutHelper;
 import dev.dworks.apps.anexplorer.ui.FloatingActionsMenu;
 import dev.dworks.apps.anexplorer.ui.fabs.SimpleMenuListenerAdapter;
 
+import static dev.dworks.apps.anexplorer.AppPaymentFlavour.isPurchased;
+import static dev.dworks.apps.anexplorer.AppPaymentFlavour.openPurchaseActivity;
 import static dev.dworks.apps.anexplorer.BaseActivity.State.ACTION_BROWSE;
 import static dev.dworks.apps.anexplorer.BaseActivity.State.ACTION_CREATE;
 import static dev.dworks.apps.anexplorer.BaseActivity.State.ACTION_GET_CONTENT;
@@ -156,7 +163,7 @@ public class DocumentsActivity extends BaseActivity implements MenuItem.OnMenuIt
     private static final String EXTRA_AUTHENTICATED = "authenticated";
     private static final String EXTRA_ACTIONMODE = "actionmode";
     private static final String EXTRA_SEARCH_STATE = "searchsate";
-    private static final String BROWSABLE = "android.intent.category.BROWSABLE";
+    public static final String BROWSABLE = "android.intent.category.BROWSABLE";
     private static final int UPLOAD_FILE = 99;
 
     private static final int CODE_FORWARD = 42;
@@ -202,7 +209,7 @@ public class DocumentsActivity extends BaseActivity implements MenuItem.OnMenuIt
             setTheme(R.style.DocumentsTheme_Translucent);
         }
         setUpStatusBar();
-
+    	
 /*		StrictMode.setVmPolicy(new StrictMode.VmPolicy.Builder().detectAll()
 				.penaltyLog()
 				.build());
@@ -301,7 +308,8 @@ public class DocumentsActivity extends BaseActivity implements MenuItem.OnMenuIt
             } else {
             	if(isDownloadAuthority(getIntent())){
             		onRootPicked(getDownloadRoot(), true);
-            	} else if(ConnectionUtils.isServerAuthority(getIntent())){
+            	} else if(ConnectionUtils.isServerAuthority(getIntent())
+                || TransferHelper.isTransferAuthority(getIntent())){
                     RootInfo root = getIntent().getExtras().getParcelable(EXTRA_ROOT);
                     onRootPicked(root, true);
                 } else if(Utils.isQSTile(getIntent())){
@@ -313,7 +321,7 @@ public class DocumentsActivity extends BaseActivity implements MenuItem.OnMenuIt
                         new RestoreStackTask().execute();
                     }
                     catch (SQLiteFullException e){
-                        Log.e("EXP", e.toString());
+                        CrashReportingManager.logException(e);
                     }
             	}
             }
@@ -348,6 +356,7 @@ public class DocumentsActivity extends BaseActivity implements MenuItem.OnMenuIt
                 CloudRail.setAuthenticationResponse(intent);
             } catch (Exception ignore) {}
         }
+        super.onNewIntent(intent);
     }
 
     @Override
@@ -358,7 +367,7 @@ public class DocumentsActivity extends BaseActivity implements MenuItem.OnMenuIt
     @Override
     public void again() {
         if(Utils.hasMarshmallow()) {
-            RootsCache.updateRoots(this, ExternalStorageProvider.AUTHORITY);
+            RootsCache.updateRoots(this);
             mRoots = DocumentsApplication.getRootsCache(this);
             final Handler handler = new Handler();
             handler.postDelayed(new Runnable() {
@@ -437,7 +446,7 @@ public class DocumentsActivity extends BaseActivity implements MenuItem.OnMenuIt
         if (mState.action == ACTION_OPEN || mState.action == ACTION_GET_CONTENT) {
             mState.allowMultiple = intent.getBooleanExtra(IntentUtils.EXTRA_ALLOW_MULTIPLE, false);
         }
-
+        
         if (mState.action == ACTION_GET_CONTENT || mState.action == ACTION_BROWSE) {
             mState.acceptMimes = new String[] { "*/*" };
             mState.allowMultiple = true;
@@ -452,7 +461,7 @@ public class DocumentsActivity extends BaseActivity implements MenuItem.OnMenuIt
         mState.forceAdvanced = intent.getBooleanExtra(DocumentsContract.EXTRA_SHOW_ADVANCED	, false);
         mState.showAdvanced = mState.forceAdvanced
                 | SettingsActivity.getDisplayAdvancedDevices(this);
-
+        
         mState.rootMode = SettingsActivity.getRootMode(this);
     }
 
@@ -518,6 +527,7 @@ public class DocumentsActivity extends BaseActivity implements MenuItem.OnMenuIt
                 }
             } catch (IOException e) {
                 Log.w(TAG, "Failed to resume: " + e);
+                CrashReportingManager.logException(e);
             } finally {
                 IoUtils.closeQuietly(cursor);
             }
@@ -530,6 +540,7 @@ public class DocumentsActivity extends BaseActivity implements MenuItem.OnMenuIt
                     mState.stack.updateDocuments(getContentResolver());
                 } catch (FileNotFoundException e) {
                     Log.w(TAG, "Failed to restore stack: " + e);
+                    CrashReportingManager.logException(e);
                     mState.stack.reset();
                     mRestoredStack = false;
                 }
@@ -549,6 +560,7 @@ public class DocumentsActivity extends BaseActivity implements MenuItem.OnMenuIt
 	                }
 				} catch (FileNotFoundException e) {
 					e.printStackTrace();
+                    CrashReportingManager.logException(e);
 				}
             }
 
@@ -618,7 +630,7 @@ public class DocumentsActivity extends BaseActivity implements MenuItem.OnMenuIt
             }
         }
     }
-
+    
     public void setInfoDrawerOpen(boolean open) {
     	if(!mShowAsDialog){
     		setRootsDrawerOpen(false);
@@ -664,6 +676,7 @@ public class DocumentsActivity extends BaseActivity implements MenuItem.OnMenuIt
             if (mState.stack.size() <= 1) {
                 if(null != root){
                     setTitle(root.title);
+                    AnalyticsManager.setCurrentScreen(this, root.derivedTag);
                 }
                 mToolbarStack.setVisibility(View.GONE);
                 mToolbarStack.setAdapter(null);
@@ -701,6 +714,7 @@ public class DocumentsActivity extends BaseActivity implements MenuItem.OnMenuIt
                 onCurrentDirectoryChanged(ANIM_NONE);
                 Bundle params = new Bundle();
                 params.putString("query", query);
+                AnalyticsManager.logEvent("search", getCurrentRoot(), params);
                 return true;
             }
 
@@ -773,7 +787,11 @@ public class DocumentsActivity extends BaseActivity implements MenuItem.OnMenuIt
         final MenuItem grid = menu.findItem(R.id.menu_grid);
         final MenuItem list = menu.findItem(R.id.menu_list);
         final MenuItem settings = menu.findItem(R.id.menu_settings);
+        final MenuItem support = menu.findItem(R.id.menu_support);
 
+        if(!isPurchased() && !isSpecialDevice()){
+            support.setVisible(true);
+        }
         // Open drawer means we hide most actions
         if (isRootsDrawerOpen()) {
             search.setVisible(false);
@@ -877,36 +895,48 @@ public class DocumentsActivity extends BaseActivity implements MenuItem.OnMenuIt
             setUserSortOrder(State.SORT_ORDER_DISPLAY_NAME);
             Bundle params = new Bundle();
             params.putString("type", "name");
+            AnalyticsManager.logEvent("sort_name", params);
             return true;
         } else if (id == R.id.menu_sort_date) {
             setUserSortOrder(State.SORT_ORDER_LAST_MODIFIED);
             Bundle params = new Bundle();
             params.putString("type", "modified");
+            AnalyticsManager.logEvent("sort_modified", params);
             return true;
         } else if (id == R.id.menu_sort_size) {
             setUserSortOrder(State.SORT_ORDER_SIZE);
             Bundle params = new Bundle();
             params.putString("type", "size");
+            AnalyticsManager.logEvent("sort_size", params);
             return true;
         } else if (id == R.id.menu_grid) {
             setUserMode(State.MODE_GRID);
             Bundle params = new Bundle();
             params.putString("type", "grid");
+            AnalyticsManager.logEvent("display_grid", params);
             return true;
         } else if (id == R.id.menu_list) {
             setUserMode(State.MODE_LIST);
             Bundle params = new Bundle();
             params.putString("type", "list");
+            AnalyticsManager.logEvent("display_list", params);
             return true;
         } else if (id == R.id.menu_settings) {
             startActivityForResult(new Intent(this, SettingsActivity.class), CODE_SETTINGS);
+            AnalyticsManager.logEvent("setting_open");
             return true;
         } else if (id == R.id.menu_about) {
             startActivity(new Intent(this, AboutActivity.class));
+            AnalyticsManager.logEvent("about_open");
             return true;
         } else if (id == R.id.menu_exit) {
             Bundle params = new Bundle();
+            AnalyticsManager.logEvent("app_exit");
             android.os.Process.killProcess(android.os.Process.myPid());
+            return true;
+        }  else if (id == R.id.menu_support) {
+            openPurchaseActivity(this);
+            AnalyticsManager.logEvent("support_open");
             return true;
         }
         return false;
@@ -916,12 +946,14 @@ public class DocumentsActivity extends BaseActivity implements MenuItem.OnMenuIt
         CreateDirectoryFragment.show(getSupportFragmentManager());
         Bundle params = new Bundle();
         params.putString(FILE_TYPE, "folder");
+        AnalyticsManager.logEvent("create_folder", params);
     }
 
     private void createFile() {
         CreateFileFragment.show(getSupportFragmentManager(), "text/plain", "File");
         Bundle params = new Bundle();
         params.putString(FILE_TYPE, "file");
+        AnalyticsManager.logEvent("create_file", params);
     }
 
     private void uploadFile(){
@@ -935,6 +967,7 @@ public class DocumentsActivity extends BaseActivity implements MenuItem.OnMenuIt
         }
         Bundle params = new Bundle();
         params.putString(FILE_TYPE, "file");
+        AnalyticsManager.logEvent("upload_file", params);
     }
 
     /**
@@ -1076,7 +1109,9 @@ public class DocumentsActivity extends BaseActivity implements MenuItem.OnMenuIt
 
             if (position == 0) {
                 final RootInfo root = getCurrentRoot();
-                title.setText(root.title);
+                if(null != root){
+                    title.setText(root.title);
+                }
             } else {
                 title.setText(doc.displayName);
             }
@@ -1138,7 +1173,7 @@ public class DocumentsActivity extends BaseActivity implements MenuItem.OnMenuIt
             return mState.action == ACTION_BROWSE ? mRoots.getDefaultRoot() : mRoots.getStorageRoot();
         }
     }
-
+    
     public RootInfo getDownloadRoot() {
     	return mRoots.getDownloadRoot();
     }
@@ -1172,7 +1207,7 @@ public class DocumentsActivity extends BaseActivity implements MenuItem.OnMenuIt
     public State getDisplayState() {
         return mState;
     }
-
+    
     public boolean isShowAsDialog() {
     	return mShowAsDialog;
     }
@@ -1190,7 +1225,7 @@ public class DocumentsActivity extends BaseActivity implements MenuItem.OnMenuIt
 
     @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
     public void onCurrentDirectoryChanged(int anim) {
-    	//FIX for java.lang.IllegalStateException ("Activity has been destroyed")
+    	//FIX for java.lang.IllegalStateException ("Activity has been destroyed") 
         if(!Utils.isActivityAlive(DocumentsActivity.this)){
             return;
         }
@@ -1199,7 +1234,8 @@ public class DocumentsActivity extends BaseActivity implements MenuItem.OnMenuIt
         DocumentInfo cwd = getCurrentDirectory();
 
         //TODO : this has to be done nicely
-        if(cwd == null && (null != root && !root.isServerStorage())){
+        boolean isExtra = (null != root && !root.isServerStorage() && !root.isTransfer());
+        if(cwd == null && isExtra){
 	        final Uri uri = DocumentsContract.buildDocumentUri(
 	                root.authority, root.documentId);
 	        DocumentInfo result;
@@ -1211,6 +1247,7 @@ public class DocumentsActivity extends BaseActivity implements MenuItem.OnMenuIt
 	                cwd = result;
 	            }
 			} catch (FileNotFoundException e) {
+                CrashReportingManager.logException(e);
 			}
         }
         if(!SettingsActivity.getFolderAnimation(this)){
@@ -1226,6 +1263,10 @@ public class DocumentsActivity extends BaseActivity implements MenuItem.OnMenuIt
                     HomeFragment.show(fm);
                 } else if(null != root && root.isConnections()){
                     ConnectionsFragment.show(fm);
+                } else if(null != root && root.isTransfer()){
+                    TransferFragment.show(fm);
+                } else if(null != root && root.isCast()){
+                    QueueFragment.show(fm);
                 } else if(null != root && root.isServerStorage()){
                     ServerFragment.show(fm, root);
                 } else {
@@ -1297,7 +1338,7 @@ public class DocumentsActivity extends BaseActivity implements MenuItem.OnMenuIt
 
         @Override
         public void onRateAppClicked() {
-            //
+            AnalyticsManager.logEvent("app_rate");
         }
     };
 
@@ -1312,6 +1353,7 @@ public class DocumentsActivity extends BaseActivity implements MenuItem.OnMenuIt
 
         } catch (FileNotFoundException e) {
             Log.w(TAG, "Failed to restore stack: " + e);
+            CrashReportingManager.logException(e);
         }
     }
     public void onRootPicked(RootInfo root, RootInfo parentRoot) {
@@ -1355,6 +1397,7 @@ public class DocumentsActivity extends BaseActivity implements MenuItem.OnMenuIt
                 return DocumentInfo.fromUri(getContentResolver(), uri);
             } catch (FileNotFoundException e) {
                 Log.w(TAG, "Failed to find root", e);
+                CrashReportingManager.logException(e);
                 return null;
             }
         }
@@ -1402,6 +1445,7 @@ public class DocumentsActivity extends BaseActivity implements MenuItem.OnMenuIt
                         resolver, mCwd.derivedUri, mUri, mMimeType, mDisplayName);
             } catch (Exception e) {
                 Log.w(DocumentsActivity.TAG, "Failed to upload document", e);
+                CrashReportingManager.logException(e);
             } finally {
                 ContentProviderClientCompat.releaseQuietly(client);
             }
@@ -1507,6 +1551,7 @@ public class DocumentsActivity extends BaseActivity implements MenuItem.OnMenuIt
     				view.setDataAndType(Uri.fromFile(file), doc.mimeType);
 				} catch (Exception e) {
 					view.setDataAndType(doc.derivedUri, doc.mimeType);
+                    CrashReportingManager.logException(e);
 				}
             }
 
@@ -1523,7 +1568,7 @@ public class DocumentsActivity extends BaseActivity implements MenuItem.OnMenuIt
                         startActivity(view);
                     }
                 } catch (Exception e){
-                    Log.e("EXP", e.toString());
+                    CrashReportingManager.logException(e);
                 }
             }
             else{
@@ -1544,6 +1589,7 @@ public class DocumentsActivity extends BaseActivity implements MenuItem.OnMenuIt
                     startActivity(manage);
                 } catch (ActivityNotFoundException ex) {
                     // Fall back to viewing
+                    CrashReportingManager.logException(ex);
                     final Intent view = new Intent(Intent.ACTION_VIEW);
                     view.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION
                             | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
@@ -1553,6 +1599,7 @@ public class DocumentsActivity extends BaseActivity implements MenuItem.OnMenuIt
                         startActivity(view);
                     } catch (ActivityNotFoundException ex2) {
                         Utils.showError(this, R.string.toast_no_application);
+                        CrashReportingManager.logException(ex2);
                     }
                 }
             }
@@ -1561,7 +1608,7 @@ public class DocumentsActivity extends BaseActivity implements MenuItem.OnMenuIt
             }
         }
     }
-
+	
     public void onDocumentsPicked(List<DocumentInfo> docs) {
         if (mState.action == ACTION_OPEN || mState.action == ACTION_GET_CONTENT || mState.action == ACTION_BROWSE) {
             final int size = docs.size();
@@ -1626,7 +1673,7 @@ public class DocumentsActivity extends BaseActivity implements MenuItem.OnMenuIt
                 clipData.addItem(new ClipData.Item(uris[i]));
             }
             if(Utils.hasJellyBean()){
-                intent.setClipData(clipData);
+                intent.setClipData(clipData);	
             }
             else{
             	intent.setData(uris[0]);
@@ -1678,6 +1725,7 @@ public class DocumentsActivity extends BaseActivity implements MenuItem.OnMenuIt
                 		resolver, cwd.derivedUri, mMimeType, mDisplayName);
             } catch (Exception e) {
                 Log.w(TAG, "Failed to create document", e);
+                CrashReportingManager.logException(e);
             } finally {
             	ContentProviderClientCompat.releaseQuietly(client);
             }
@@ -1743,7 +1791,7 @@ public class DocumentsActivity extends BaseActivity implements MenuItem.OnMenuIt
             onFinished(mUri);
         }
     }
-
+    
     private class MoveTask extends AsyncTask<Void, Void, Boolean> {
         private final DocumentInfo toDoc;
         private final ArrayList<DocumentInfo> docs;
@@ -1785,12 +1833,14 @@ public class DocumentsActivity extends BaseActivity implements MenuItem.OnMenuIt
     			} catch (Exception e) {
     				Log.w(TAG, "Failed to move " + doc);
     				hadTrouble = true;
+                    CrashReportingManager.logException(e);
     			}
     		}
 
             Bundle params2 = new Bundle();
             params2.putBoolean(FILE_MOVE, deleteAfter);
             params2.putInt(FILE_COUNT, docs.size());
+            AnalyticsManager.logEvent("files_moved", params2);
 
             return hadTrouble;
         }
@@ -1854,7 +1904,7 @@ public class DocumentsActivity extends BaseActivity implements MenuItem.OnMenuIt
 
         setUpStatusBar();
 	}
-
+	
 	private Drawable.Callback drawableCallback = new Drawable.Callback() {
 		@Override
 		public void invalidateDrawable(Drawable who) {
@@ -1871,7 +1921,7 @@ public class DocumentsActivity extends BaseActivity implements MenuItem.OnMenuIt
 			handler.removeCallbacks(what);
 		}
 	};
-
+	
 	public boolean getActionMode() {
 		return mActionMode;
 	}

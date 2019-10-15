@@ -53,7 +53,6 @@ import java.util.Locale;
 
 import androidx.annotation.IntDef;
 import androidx.appcompat.app.AppCompatDelegate;
-import androidx.core.app.ShareCompat;
 import androidx.core.content.ContextCompat;
 import androidx.core.text.TextUtilsCompat;
 import androidx.vectordrawable.graphics.drawable.VectorDrawableCompat;
@@ -66,6 +65,8 @@ import dev.dworks.apps.anexplorer.setting.SettingsActivity;
 
 import static android.content.Intent.ACTION_SENDTO;
 import static android.service.quicksettings.TileService.ACTION_QS_TILE_PREFERENCES;
+import static com.google.android.material.snackbar.Snackbar.LENGTH_INDEFINITE;
+import static com.google.android.material.snackbar.Snackbar.LENGTH_LONG;
 import static com.google.android.material.snackbar.Snackbar.LENGTH_SHORT;
 
 public class Utils extends UtilsFlavour{
@@ -108,11 +109,11 @@ public class Utils extends UtilsFlavour{
     public static boolean hasJellyBeanMR1() {
         return Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1;
     }
-
+    
     public static boolean hasJellyBeanMR2() {
         return Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2;
     }
-
+    
     public static boolean hasKitKat() {
         return Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT;
     }
@@ -152,7 +153,7 @@ public class Utils extends UtilsFlavour{
     public static boolean hasMoreHeap(){
     	return Runtime.getRuntime().maxMemory() > 20971520;
     }
-
+    
     @TargetApi(Build.VERSION_CODES.KITKAT)
     public static boolean isLowRamDevice(Context context) {
     	if(Utils.hasKitKat()){
@@ -165,7 +166,7 @@ public class Utils extends UtilsFlavour{
     public static boolean isTablet(Context context) {
 		return context.getResources().getConfiguration().smallestScreenWidthDp >= 600;
 	}
-
+    
 	public static int parseMode(String mode) {
         final int modeBits;
         if ("r".equals(mode)) {
@@ -190,7 +191,7 @@ public class Utils extends UtilsFlavour{
         }
         return modeBits;
     }
-
+    
     /**
      * Recursively delete everything in {@code dir}.
      */
@@ -204,11 +205,11 @@ public class Utils extends UtilsFlavour{
                 deleteContents(file);
             }
             if (!file.delete()) {
-
+                
             }
         }
     }
-
+    
     public static boolean isRooted(){
         for (String p : Utils.BinaryPlaces) {
             File su = new File(p + "su");
@@ -218,7 +219,7 @@ public class Utils extends UtilsFlavour{
         }
         return false;//RootTools.isRootAvailable();
     }
-
+    
     public static String formatTime(Context context, long when) {
 		// TODO: DateUtils should make this easier
 		Time then = new Time();
@@ -321,6 +322,10 @@ public class Utils extends UtilsFlavour{
         return MimePredicate.mimeMatches(DocumentsContract.Document.MIME_TYPE_APK, mimeType);
     }
 
+    public static boolean isPDF(String mimeType){
+        return MimePredicate.mimeMatches(DocumentsContract.Document.MIME_TYPE_PDF, mimeType);
+    }
+
     public static boolean isDir(String mimeType){
         return MimePredicate.mimeMatches(DocumentsContract.Document.MIME_TYPE_DIR, mimeType);
     }
@@ -365,10 +370,7 @@ public class Utils extends UtilsFlavour{
     }
 
     public static Uri getAppProStoreUri(){
-        if(isAmazonBuild()){
-            return Uri.parse("http://www.amazon.com/gp/mas/dl/android?p=" + BuildConfig.APPLICATION_ID+".pro" + "&showAll=1");
-        }
-        return Uri.parse("https://play.google.com/store/apps/details?id=" + BuildConfig.APPLICATION_ID+".pro");
+        return Uri.parse("https://ais-dom.pl/pl/promotions");
     }
 
     public static boolean hasFeature(Context context, String feature) {
@@ -398,8 +400,12 @@ public class Utils extends UtilsFlavour{
         showSnackBar(activity, activity.getString(msg), LENGTH_SHORT, "ERROR", null);
     }
 
+    public static void showPermanentRetrySnackBar(Activity activity, String text, View.OnClickListener listener){
+        showSnackBar(activity, text, LENGTH_INDEFINITE , "RETRY", listener);
+    }
+
     public static void showRetrySnackBar(Activity activity, String text, View.OnClickListener listener){
-        showSnackBar(activity, text, LENGTH_SHORT , "RETRY", listener);
+        showSnackBar(activity, text, LENGTH_LONG , "RETRY", listener);
     }
 
     public static void showSnackBar(Activity activity, String message){
@@ -427,39 +433,14 @@ public class Utils extends UtilsFlavour{
         return Math.round(px);
     }
 
-    public static void changeThemeStyle(AppCompatDelegate delegate) {
+    public static void changeThemeStyle() {
         int nightMode = Integer.valueOf(SettingsActivity.getThemeStyle());
         AppCompatDelegate.setDefaultNightMode(nightMode);
-        delegate.setLocalNightMode(nightMode);
     }
 
     public static void setAppThemeStyle(Context context) {
         int nightMode = Integer.valueOf(SettingsActivity.getThemeStyle(context));
-        if (nightMode != AppCompatDelegate.MODE_NIGHT_NO) {
-            try {
-                new WebView(context);
-            } catch (Exception e) {
-            }
-        }
         AppCompatDelegate.setDefaultNightMode(nightMode);
-    }
-
-    public static void setActivityThemeStyle(AppCompatDelegate delegate) {
-        int nightMode = Integer.valueOf(SettingsActivity.getThemeStyle());
-        AppCompatDelegate.setDefaultNightMode(nightMode);
-        delegate.setLocalNightMode(nightMode);
-    }
-
-    public static void recreateActivity(Activity activity) {
-        if(!isActivityAlive(activity)){
-            return;
-        }
-        AppCompatDelegate delegate = null;
-        if(activity instanceof ActionBarActivity){
-            delegate = ((ActionBarActivity)activity).getDelegate();
-        }
-        Utils.changeThemeStyle(delegate);
-        activity.recreate();
     }
 
     public static boolean isDarkTheme(){
@@ -545,30 +526,22 @@ public class Utils extends UtilsFlavour{
     }
 
     public static void openFeedback(Activity activity){
-        sendEmail(activity, "Send Feedback", "AIS-Explorer Feedback");
+        sendEmail(activity, "Send Feedback", "AIS Explorer Feedback");
     }
 
     public static void sendEmail(Activity activity, String title, String subject){
         final Intent result = new Intent(ACTION_SENDTO);
         result.setData(Uri.parse("mailto:"));
-        result.putExtra(Intent.EXTRA_EMAIL, new String[]{"admin@sviete.pl"});
+        result.putExtra(Intent.EXTRA_EMAIL, new String[]{"info@sviete.pl"});
         result.putExtra(Intent.EXTRA_SUBJECT, subject);
-        result.putExtra(Intent.EXTRA_TEXT, "AIS-Explorer Feedback"
-                + getSuffix() + " v3");
+        result.putExtra(Intent.EXTRA_TEXT, "AIS Explorer Feedback"
+                + getSuffix() + " v" + BuildConfig.VERSION_NAME);
 
         activity.startActivity(Intent.createChooser(result, title));
     }
 
     public static void openPlaystore(Context çontext){
         Intent intent = new Intent(Intent.ACTION_VIEW, Utils.getAppUri());
-        if(Utils.isIntentAvailable(çontext, intent)) {
-            çontext.startActivity(intent);
-        }
-    }
-
-
-    public static void openGithub(Context çontext){
-        Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/sviete/AIS-explorer"));
         if(Utils.isIntentAvailable(çontext, intent)) {
             çontext.startActivity(intent);
         }

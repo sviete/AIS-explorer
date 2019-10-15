@@ -55,6 +55,7 @@ import androidx.annotation.Nullable;
 import androidx.exifinterface.media.ExifInterface;
 import dev.dworks.apps.anexplorer.libcore.io.IoUtils;
 import dev.dworks.apps.anexplorer.misc.ContentProviderClientCompat;
+import dev.dworks.apps.anexplorer.misc.CrashReportingManager;
 import dev.dworks.apps.anexplorer.misc.ImageUtils;
 import dev.dworks.apps.anexplorer.misc.OsCompat;
 import dev.dworks.apps.anexplorer.misc.Utils;
@@ -272,7 +273,9 @@ public final class DocumentsContract {
          * @see #COLUMN_MIME_TYPE
          */
         public static final String MIME_TYPE_APK = "application/vnd.android.package-archive";
-        
+
+        public static final String MIME_TYPE_PDF = "application/pdf";
+
         public static final String MIME_TYPE_HIDDEN = "vnd.android.document/hidden";
         
         /**
@@ -1050,7 +1053,7 @@ public final class DocumentsContract {
             afd = openTypedAssetFileDescriptor(client, documentUri, "image/*", openOpts, signal);
 
         } catch (Exception e) {
-            Log.e(TAG, e.toString());
+            CrashReportingManager.logException(e);
         }
         return afd;
     }
@@ -1439,7 +1442,7 @@ public final class DocumentsContract {
                 return buildAssetFileDescriptor(pfd, thumb[0], thumb[1], extras);
             }
         } catch (IOException e) {
-            Log.e(TAG, e.toString());
+            CrashReportingManager.logException(e);
         }
         return buildAssetFileDescriptor(pfd, 0, AssetFileDescriptor.UNKNOWN_LENGTH, extras);
     }

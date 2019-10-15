@@ -12,6 +12,7 @@ import java.io.File;
 
 import dev.dworks.apps.anexplorer.DocumentsApplication;
 import dev.dworks.apps.anexplorer.misc.AsyncTask;
+import dev.dworks.apps.anexplorer.misc.CrashReportingManager;
 import dev.dworks.apps.anexplorer.misc.ProviderExecutor;
 import dev.dworks.apps.anexplorer.misc.Utils;
 
@@ -51,6 +52,7 @@ public class FolderSizeAsyncTask extends AsyncTask<Uri, Void, Long> implements P
 				if (!(e instanceof OperationCanceledException)) {
 					Log.w(TAG, "Failed to calculate size for " + mPath + ": " + e);
 				}
+				CrashReportingManager.logException(e);
 			}
 			return result;
 		}

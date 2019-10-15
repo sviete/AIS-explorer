@@ -99,18 +99,4 @@
     <string name="cloud_box">Box</string>
     <string name="network_ftp">FTP</string>
     <drawable name="dummy_icon">@drawable/ic_dummy_icon</drawable>
-
-    <string name="menu_about">"About"</string>
-    <string name="menu_exit">"Exit"</string>
-    <string name="transfer_to_pc">"Transfer to PC"</string>
-    <string name="rate_us_on_play_store">"Rate us on Play store"</string>
-    <string name="spread_the_word">"Spread the word"</string>
-    <string name="feed_us_back">"Feed us back"</string>
-    <string name="source_code">"Source code"</string>
-    <string name="recent_media">"Recent Media"</string>
-    <string name="more">"MORE"</string>
-    <string name="no_root">"Your device is not rooted!"</string>
-    <string name="share_text">"I found this file mananger very useful. Give it a try."</string>
-
-
 </resources>

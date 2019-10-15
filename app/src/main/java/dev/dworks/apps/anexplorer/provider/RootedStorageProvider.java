@@ -26,7 +26,6 @@ import android.os.Binder;
 import android.os.CancellationSignal;
 import android.os.ParcelFileDescriptor;
 import android.text.TextUtils;
-import android.util.Log;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -41,6 +40,7 @@ import dev.dworks.apps.anexplorer.BuildConfig;
 import dev.dworks.apps.anexplorer.R;
 import dev.dworks.apps.anexplorer.cursor.MatrixCursor;
 import dev.dworks.apps.anexplorer.cursor.MatrixCursor.RowBuilder;
+import dev.dworks.apps.anexplorer.misc.CrashReportingManager;
 import dev.dworks.apps.anexplorer.misc.FileUtils;
 import dev.dworks.apps.anexplorer.misc.MimePredicate;
 import dev.dworks.apps.anexplorer.misc.ParcelFileDescriptorUtil;
@@ -105,7 +105,7 @@ public class RootedStorageProvider extends StorageProvider {
             root.path = path;
             root.docId = getDocIdForRootFile(path);
         } catch (FileNotFoundException e) {
-            Log.e("EXP", e.toString());
+            CrashReportingManager.logException(e);
         }
 
         notifyRootsChanged(getContext());
@@ -398,7 +398,7 @@ public class RootedStorageProvider extends StorageProvider {
             }
 
         } catch (Exception e) {
-            Log.e("EXP", e.toString());
+            CrashReportingManager.logException(e);
         }
         return result;
     }
@@ -442,13 +442,13 @@ public class RootedStorageProvider extends StorageProvider {
 
         final long token = Binder.clearCallingIdentity();
         try {
-            if ("audio".equals(typeOnly)) {
+            if (MediaDocumentsProvider.TYPE_AUDIO.equals(typeOnly)) {
                 final long id = getAlbumForPathCleared(file.getPath());
                 return openOrCreateAudioThumbnailCleared(id, signal);
-            } else if ("image".equals(typeOnly)) {
+            } else if (MediaDocumentsProvider.TYPE_IMAGE.equals(typeOnly)) {
                 final long id = getImageForPathCleared(file.getPath());
                 return openOrCreateImageThumbnailCleared(id, signal);
-            } else if ("video".equals(typeOnly)) {
+            } else if (MediaDocumentsProvider.TYPE_VIDEO.equals(typeOnly)) {
                 final long id = getVideoForPathCleared(file.getPath());
                 return openOrCreateVideoThumbnailCleared(id, signal);
             } else {
