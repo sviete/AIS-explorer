@@ -58,13 +58,14 @@ import com.google.android.material.snackbar.Snackbar;
 
 import java.util.ArrayList;
 
+import dev.dworks.apps.anexplorer.AppPaymentFlavour;
 import dev.dworks.apps.anexplorer.BaseActivity;
 import dev.dworks.apps.anexplorer.BaseActivity.State;
 import dev.dworks.apps.anexplorer.DocumentsActivity;
 import dev.dworks.apps.anexplorer.DocumentsApplication;
 import dev.dworks.apps.anexplorer.R;
 import dev.dworks.apps.anexplorer.common.DialogBuilder;
-import dev.dworks.apps.anexplorer.common.RecyclerFragment;
+import dev.dworks.apps.anexplorer.directory.DirectoryFragmentFlavour;
 import dev.dworks.apps.anexplorer.directory.DividerItemDecoration;
 import dev.dworks.apps.anexplorer.directory.DocumentsAdapter;
 import dev.dworks.apps.anexplorer.directory.FolderSizeAsyncTask;
@@ -131,7 +132,7 @@ import static dev.dworks.apps.anexplorer.ui.RecyclerViewPlus.TYPE_LIST;
 /**
  * Display the documents inside a single directory.
  */
-public class DirectoryFragment extends RecyclerFragment implements MenuItem.OnMenuItemClickListener {
+public class DirectoryFragment extends DirectoryFragmentFlavour implements MenuItem.OnMenuItemClickListener {
 
 	private static final String KEY_ADAPTER = "key_adapter";
 	private CompatTextView mEmptyView;
@@ -263,6 +264,7 @@ public class DirectoryFragment extends RecyclerFragment implements MenuItem.OnMe
 
 		final DocumentsActivity context = (DocumentsActivity)getActivity();
 		final State state = getDisplayState(DirectoryFragment.this);
+		final boolean showNativeAds = !context.showBannerAds;
 
 		root = getArguments().getParcelable(EXTRA_ROOT);
 		doc = getArguments().getParcelable(EXTRA_DOC);
@@ -333,44 +335,13 @@ public class DirectoryFragment extends RecyclerFragment implements MenuItem.OnMe
 				if(null != savedInstanceState) {
 					saveDisplayState();
 				}
-				mAdapter.swapResult(result);
 
-				// Push latest state up to UI
-				// TODO: if mode change was racing with us, don't overwrite it
-				if (result.mode != MODE_UNKNOWN) {
-					state.derivedMode = result.mode;
-				}
-                if (result.sortOrder != SORT_ORDER_UNKNOWN) {
-                    state.derivedSortOrder = result.sortOrder;
-                }
-				final Handler handler = new Handler();
-				handler.postDelayed(new Runnable() {
-					@Override
-					public void run() {
-						((BaseActivity) context).onStateChanged();
-					}
-				}, 500);
-
-				updateDisplayState();
-
-				// When launched into empty recents, show drawer
-				if (mType == TYPE_RECENT_OPEN && mAdapter.isEmpty() && !state.stackTouched) {
-					((BaseActivity) context).setRootsDrawerOpen(true);
-				}
-				if (isResumed()) {
-					setListShown(true);
+				boolean showData = mType == TYPE_RECENT_OPEN || AppPaymentFlavour.isPurchased()
+						|| isSpecialDevice() || !showNativeAds;
+				if (showData) {
+					showData(result);
 				} else {
-					setListShownNoAnimation(true);
-				}
-				if(isWatch()) {
-					Utils.setItemsCentered(getListView(), mAdapter.getItemCount() > 1);
-				}
-				mLastSortOrder = state.derivedSortOrder;
-
-				restoreDisplaySate();
-
-				if(isTelevision()){
-					getListView().requestFocus();
+					loadNativeAds(result);
 				}
 			}
 
@@ -388,6 +359,55 @@ public class DirectoryFragment extends RecyclerFragment implements MenuItem.OnMe
 		LoaderManager.getInstance(getActivity()).restartLoader(mLoaderId, null, mCallbacks);
 
 		updateDisplayState();
+	}
+
+	@Override
+	public void showData(DirectoryResult result){
+
+		if (!isAdded())
+			return;
+
+		final DocumentsActivity context = (DocumentsActivity)getActivity();
+		final State state = getDisplayState(DirectoryFragment.this);
+		mAdapter.swapResult(result);
+
+		// Push latest state up to UI
+		// TODO: if mode change was racing with us, don't overwrite it
+		if (result.mode != MODE_UNKNOWN) {
+			state.derivedMode = result.mode;
+		}
+		if (result.sortOrder != SORT_ORDER_UNKNOWN) {
+			state.derivedSortOrder = result.sortOrder;
+		}
+		final Handler handler = new Handler();
+		handler.postDelayed(new Runnable() {
+			@Override
+			public void run() {
+				((BaseActivity) context).onStateChanged();
+			}
+		}, 500);
+
+		updateDisplayState();
+
+		// When launched into empty recents, show drawer
+		if (mType == TYPE_RECENT_OPEN && mAdapter.isEmpty() && !state.stackTouched) {
+			((BaseActivity) context).setRootsDrawerOpen(true);
+		}
+		if (isResumed()) {
+			setListShown(true);
+		} else {
+			setListShownNoAnimation(true);
+		}
+		if(isWatch()) {
+			Utils.setItemsCentered(getListView(), mAdapter.getItemCount() > 1);
+		}
+		mLastSortOrder = state.derivedSortOrder;
+
+		restoreDisplaySate();
+
+		if(isTelevision()){
+			getListView().requestFocus();
+		}
 	}
 
 	public void saveDisplayState(){

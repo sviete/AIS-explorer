@@ -72,7 +72,14 @@ import static com.google.android.material.snackbar.Snackbar.LENGTH_SHORT;
 public class Utils extends UtilsFlavour{
 
     public static final long KB_IN_BYTES = 1024;
+    private static final String ADMOB_TEST_AD_UNIT_ID = "ca-app-pub-3940256099942544/2247696110";
     public static final String INTERSTITIAL_APP_UNIT_ID = "ca-app-pub-6407484780907805/9134520474";
+    public static final String REWARDED_APP_UNIT_ID = BuildConfig.DEBUG
+            ? "ca-app-pub-3940256099942544/5224354917" : "ca-app-pub-6407484780907805/5163392305";
+    public static final String NATIVE_APP_UNIT_ID = BuildConfig.DEBUG
+            ? ADMOB_TEST_AD_UNIT_ID : "ca-app-pub-6407484780907805/5595623254";
+    public static final String NATIVE_BIG_APP_UNIT_ID = BuildConfig.DEBUG
+            ? ADMOB_TEST_AD_UNIT_ID : "ca-app-pub-6407484780907805/7834488376";
 
     public static final String DIRECTORY_APPBACKUP = "AppBackup";
 
@@ -84,6 +91,7 @@ public class Utils extends UtilsFlavour{
     public static final String EXTRA_IGNORE_STATE = "ignoreState";
 
     public static String AMAZON_FEATURE_FIRE_TV = "amazon.hardware.fire_tv";
+    public static final String FEATURE_PC = "android.hardware.type.pc";
 
     static final String[] BinaryPlaces = { "/data/bin/", "/system/bin/", "/system/xbin/", "/sbin/",
         "/data/local/xbin/", "/data/local/bin/", "/system/sd/xbin/", "/system/bin/failsafe/",
@@ -399,6 +407,10 @@ public class Utils extends UtilsFlavour{
         return uiModeManager.getCurrentModeType() == Configuration.UI_MODE_TYPE_WATCH;
     }
 
+    public static boolean isChromeBook(Context context) {
+        return hasFeature(context, FEATURE_PC);
+    }
+
     public static void showError(Activity activity, int msg){
         showSnackBar(activity, activity.getString(msg), LENGTH_SHORT, "ERROR", null);
     }
@@ -524,6 +536,8 @@ public class Utils extends UtilsFlavour{
             suffix = " for Android TV";
         } else if(DocumentsApplication.isWatch()){
             suffix = " for Wear OS";
+        } else if(DocumentsApplication.isChromebook()){
+            suffix = " for Chromebook";
         }
         return Utils.isProVersion() ? " Pro" : "" + suffix;
     }
